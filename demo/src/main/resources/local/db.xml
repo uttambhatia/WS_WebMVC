@@ -1,0 +1,8 @@
+<datasources>
+  <datasource>
+     <url>oracle.com</url>
+     <username>uttam</username>
+     <password>123</password>
+     <driverClass>oracle.driver.OracleDriver</driverClass>
+  </datasource>
+</datasources>
