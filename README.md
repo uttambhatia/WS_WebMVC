@@ -35,7 +35,7 @@ Local Transaction - Spring Managed
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-jta-atomikos</artifactId>
     </dependency>
-    
+     
   2. 
   @Configuration
    public class TransactionConfig {
