@@ -8,7 +8,9 @@ Local Transaction - Spring Managed
 			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
     
-2. @Configuration
+2. 
+
+@Configuration
    @EnableTransactionManagement
    public class Config{
    @Bean
