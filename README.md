@@ -27,9 +27,9 @@ Local Transaction - Spring Managed
  
  1. 
   <dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-tx</artifactId>
-		</dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-tx</artifactId>
+  </dependency>
 
     <dependency>
         <groupId>org.springframework.boot</groupId>
