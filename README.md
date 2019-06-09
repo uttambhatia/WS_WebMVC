@@ -2,11 +2,12 @@
 WS_WebMVC
 
 Local Transaction - Spring Managed
+
 1. 
    <dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jdbc</artifactId>
-		</dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-jdbc</artifactId>
+  </dependency>
     
 2. 
 
