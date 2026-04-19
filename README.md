@@ -1,5 +1,4 @@
 
-Upgrade to Architect
 Healthcare Patient Engagement & Care Coordination Platform
 
 April 2026
