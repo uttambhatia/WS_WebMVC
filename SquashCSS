@@ -1,152 +1,288 @@
+/**
+ * TestGenFormPanel — Stage 5: display test generation results + export.
+ *
+ * StageFlowPanel interface: validate() / submit()
+ * validate() and submit() are auto-success (read-only result panel).
+ *
+ * Initialization props:
+ *   title          {string}
+ *   exportService  {async fn(taskId, params) → blob download}  exportTestCases service.
+ *
+ * serviceData UI contract (mapped by StageFlowPanelDemo mapTestGenData):
+ *   taskId     {string|null}
+ *   testcases  {Array<{ testCaseId, requirementId, testDescription,
+ *                       preconditions, testStepAction }>}
+ */
 
-.fp__field-block {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  position: relative;
+import { forwardRef, useImperativeHandle, useState } from "react";
+import DataTable from "../../DataTable/DataTable";
+import SaveToSquashPanel from "./SaveToSquashPanel";
+import "../FormPanel.css";
+
+const renderLines = (v) =>
+  Array.isArray(v) ? (
+    <ul className="dt__bullet-list">
+      {v.map((item, i) => <li key={i}>{item}</li>)}
+    </ul>
+  ) : (v ?? "\u2014");
+
+const TC_COLS = [
+  { key: "testCaseId",      label: "Test Case Id",       width: "14%" },
+  { key: "requirementId",   label: "Requirement Id",     width: "16%" },
+  { key: "testDescription", label: "Test Description",   width: "20%", truncate: 120 },
+  { key: "preconditions",   label: "Pre-conditions",     render: renderLines, width: "25%", verticalAlign: "top", truncate: 120 },
+  { key: "testStepAction",  label: "Test Step Action",   render: renderLines, width: "25%", verticalAlign: "top", truncate: 120 },
+];
+
+function SpinnerIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="42 14"/>
+    </svg>
+  );
 }
 
-.fp__field-block--compact {
-  gap: 3px;
+function ExportIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M7 2v7m0 0-3-3m3 3 3-3M2 11h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
 }
 
-.fp__field-label {
-  font-size: var(--ubs-font-sz-xs);
-  font-weight: 600;
-  color: var(--ubs-c-text-subtle, #4b5563);
-  line-height: 1.2;
-}
+const TestGenFormPanel = forwardRef(function TestGenFormPanel(
+  {
+    serviceData,
+    stageStatus,
+    onSubmitStart,
+    onSubmitSuccess,
+    onSubmitError,
+    // Wiring-time
+    title = "Test Case Generation",
+    subtitle = "AI-generated test cases derived from the approved requirement document.",
+    exportService,
+    squashConfig = null,
+    readOnly = false,
+  },
+  ref
+) {
+  /* Destructure mapped UI contract — all defaults provided by the mapper */
+  const {
+    taskId = null,
+    testcases = [],
+    rawTestGenerationJson = null,
+  } = serviceData ?? {};
 
-.fp__folder-suggest {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  z-index: 12;
-  border: 1px solid var(--ubs-c-border-light, #d8dce3);
-  border-radius: var(--ubs-radius);
-  background: #fff;
-  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.12);
-  max-height: 180px;
-  overflow-y: auto;
-}
+  /* Export panel state */
+  const [exportOpen, setExportOpen]       = useState(false);
+  const [squashOpen, setSquashOpen]       = useState(false);
+  const [exportPath, setExportPath]       = useState("");
+  const [exportEmail, setExportEmail]     = useState("");
+  const [exportPrereq, setExportPrereq]   = useState("");
+  const [exporting, setExporting]         = useState(false);
+  const [exportStatus, setExportStatus]   = useState(null);
+  const [exportErrors, setExportErrors]   = useState({});
 
-.fp__folder-suggest-item {
-  width: 100%;
-  border: 0;
-  background: transparent;
-  text-align: left;
-  padding: 8px 10px;
-  font-size: var(--ubs-font-sz-sm);
-  color: var(--ubs-c-text, #111827);
-  cursor: pointer;
-}
+  const isReady   = readOnly || stageStatus === "ready" || stageStatus === "success";
+  const isLoading = !readOnly && (stageStatus === "idle" || stageStatus === "loading");
+  useImperativeHandle(ref, () => ({
+    validate() { return true; },
+    async submit(submitPayload) {
+      const payload = submitPayload ?? serviceData;
+      onSubmitStart?.();
+      onSubmitSuccess?.(payload);
+      return { success: true };
+    },
+  }));
 
-.fp__folder-suggest-item:hover,
-.fp__folder-suggest-item:focus-visible {
-  background: var(--ubs-c-surface-hover, #f3f4f6);
-  outline: none;
-}
+  /* ---- StageFlowPanel contract ---- */
+  const validateExport = () => {
+    const errs = {};
+    if (!exportPath.trim())  errs.path  = "Test Case Path is required.";
+    if (!exportEmail.trim()) errs.email = "Created by Email Id is required.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(exportEmail)) errs.email = "Invalid email address.";
+    setExportErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
-/* ---- Save to Squash (TestGenFormPanel) ---- */
-.fp__squash-wrap {
-  display: flex;
-  align-items: center;
-  gap: var(--ubs-sp-2);
-  flex: 1;
-  min-width: 0;
-}
+  const handleExportClick = () => {
+    if (!exportOpen) {
+      setExportOpen(true);
+      setSquashOpen(false);
+      return;
+    }
+    // "Export Now" clicked
+    if (!validateExport()) return;
+    setExporting(true);
+    setExportStatus(null);
+    const params = { path: exportPath, email: exportEmail, prerequisites: exportPrereq };
+    (exportService ? exportService(taskId, params) : Promise.resolve())
+      .then(() => setExportStatus({ type: "success", message: "Export completed successfully." }))
+      .catch((err) => {
+        const msg = err?.response?.data?.message ?? err?.message ?? "Export failed.";
+        setExportStatus({ type: "error", message: msg });
+      })
+      .finally(() => setExporting(false));
+  };
 
-.fp__squash-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ubs-sp-2);
-  flex: 1;
-  min-width: 0;
-  padding: var(--ubs-sp-2);
-  border: 1px solid var(--ubs-c-border-light, #d8dce3);
-  border-radius: var(--ubs-radius);
-  background: var(--ubs-c-surface-hover, #f8fafc);
-  animation: fp-fadein 0.15s ease both;
-}
+  /* ---- Export ---- */
 
-.fp__squash-mode-row {
-  display: flex;
-  align-items: center;
-  gap: var(--ubs-sp-4);
-  flex-wrap: wrap;
-}
+  return (
+    <div className="fp">
+      {/* Title bar */}
+      <div className="fp__titlebar">
+        <div className="fp__titlebar-top">
+          <h2 className="fp__title">{title}</h2>
+        </div>
+        {subtitle && <p className="fp__subtitle">{subtitle}</p>}
+      </div>
+      {isReady && taskId && (
+        <span className="fp__task-id">
+          Task Id: <strong>{taskId}</strong>
+        </span>
+      )}
 
-.fp__squash-radio {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ubs-sp-2);
-  font-size: var(--ubs-font-sz-sm);
-  color: var(--ubs-c-text);
-}
+      {isLoading ? (
+        <div className="fp__loading">
+          <svg className="fp__loading-spinner" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5"
+              strokeLinecap="round" strokeDasharray="42 14" />
+          </svg>
+          <span>Generating test cases…</span>
+        </div>
+      ) : !isReady ? null : (
+        <div className="fp__body">
+        {/* Export status */}
+        {exportStatus && (
+          <div className={`fp__status fp__status--${exportStatus.type}`} role="alert">
+            {exportStatus.message}
+          </div>
+        )}
 
-.fp__squash-fields {
-  display: flex;
-  align-items: center;
-  gap: var(--ubs-sp-2);
-  flex-wrap: wrap;
-}
+        <p className="fp__section-title">Test Generation Result</p>
 
-.fp__squash-fields--new {
-  align-items: flex-start;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(140px, 1fr));
-  gap: var(--ubs-sp-2);
-  width: 100%;
-}
+    
+        {/* Export bar */}
+        <div className="fp__export-bar">
+          {!exportOpen && (
+            <SaveToSquashPanel
+              taskId={taskId}
+              rawTestGenerationJson={rawTestGenerationJson}
+              squashConfig={squashConfig}
+              open={squashOpen}
+              onOpenChange={(nextOpen) => {
+                setSquashOpen(nextOpen);
+                if (nextOpen) {
+                  setExportOpen(false);
+                }
+              }}
+            />
+          )}
 
-.fp__squash-field {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ubs-sp-1);
-  min-width: 0;
-}
+          {!squashOpen && exportOpen && (
+            <div className="fp__export-fields">
+              <div className="fp__field-block">
+                <label className="fp__field-label" htmlFor="fp-export-path">Test Case Path *</label>
+                <input
+                  id="fp-export-path"
+                  type="text"
+                  className={`fp__input fp__export-input${exportErrors.path ? " fp__input--error" : ""}`}
+                  placeholder="Enter test case path"
+                  value={exportPath}
+                  onChange={(e) => { setExportPath(e.target.value); if (exportErrors.path) setExportErrors((p) => ({ ...p, path: undefined })); }}
+                  disabled={exporting}
+                  aria-label="Test Case Path"
+                />
+              </div>
+              <div className="fp__field-block">
+                <label className="fp__field-label" htmlFor="fp-export-email">Created by Email Id *</label>
+                <input
+                  id="fp-export-email"
+                  type="email"
+                  className={`fp__input fp__export-input${exportErrors.email ? " fp__input--error" : ""}`}
+                  placeholder="Enter creator email"
+                  value={exportEmail}
+                  onChange={(e) => { setExportEmail(e.target.value); if (exportErrors.email) setExportErrors((p) => ({ ...p, email: undefined })); }}
+                  disabled={exporting}
+                  aria-label="Created by Email Id"
+                />
+              </div>
+              <div className="fp__field-block">
+                <label className="fp__field-label" htmlFor="fp-export-prereq">Pre-requisites (optional)</label>
+                <input
+                  id="fp-export-prereq"
+                  type="text"
+                  className="fp__input fp__export-input"
+                  placeholder="Enter pre-requisites"
+                  value={exportPrereq}
+                  onChange={(e) => setExportPrereq(e.target.value)}
+                  disabled={exporting}
+                  aria-label="Test Case Pre-requisites"
+                />
+              </div>
+            </div>
+          )}
 
-.fp__squash-input {
-  width: 100%;
-  min-width: 140px;
-}
+          {!squashOpen && (
+            <div className="fp__export-actions">
+              <button
+                type="button"
+                className="fp__btn fp__btn--grey"
+                onClick={handleExportClick}
+                disabled={exporting}
+                title={exportOpen ? "Click to export" : "Open export options"}
+              >
+                {exporting ? (
+                  <SpinnerIcon className="fp__spinner" />
+                ) : (
+                  <ExportIcon />
+                )}
+                {exporting ? "Exporting…" : exportOpen ? "Export" : "Export"}
+              </button>
 
-.fp__squash-tick {
-  width: 20px;
-  height: 20px;
-  color: var(--ubs-c-green, #0d8a4f);
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+              {exportOpen && (
+                <button
+                  type="button"
+                  className="fp__btn fp__btn--ghost"
+                  onClick={() => {
+                    setExportOpen(false);
+                    setExportPath("");
+                    setExportEmail("");
+                    setExportPrereq("");
+                    setExportErrors({});
+                    setExportStatus(null);
+                  }}
+                  disabled={exporting}
+                  title="Cancel export"
+                >
+                  Close
+                </button>
+              )}
+            </div>
+          )}
+        </div>
 
-.fp__squash-tick svg {
-  width: 18px;
-  height: 18px;
-}
+        {/* Export field validation errors */}
+        {exportOpen && (exportErrors.path || exportErrors.email) && (
+          <div className="fp__export-errors">
+            {exportErrors.path  && <span className="fp__validation-error">{exportErrors.path}</span>}
+            {exportErrors.email && <span className="fp__validation-error">{exportErrors.email}</span>}
+          </div>
+        )}
 
-.fp__squash-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--ubs-sp-2);
-  margin-left: auto;
-}
+        {/* Test cases data table */}
+        <DataTable
+          columns={TC_COLS}
+          data={testcases}
+          pageSize={10}
+          sortableColumns={["testCaseId", "requirementId"]}
+          searchableColumns={["testCaseId", "requirementId", "testDescription"]}
+          pageSizeOptions={[5, 10, 25, 50]}
+        />
+      </div>
+      )}
+    </div>
+  );
+});
 
-
-
-
-
-@media (max-width: 640px) {
-  .fp__export-bar    { flex-wrap: wrap; }
-  .fp__export-fields { flex-wrap: wrap; flex: 1 1 100%; }
-  .fp__export-input  { width: 100%; }
-  .fp__export-errors { flex-wrap: wrap; }
-  .fp__squash-wrap   { flex: 1 1 100%; flex-wrap: wrap; }
-  .fp__squash-panel  { flex: 1 1 100%; }
-  .fp__squash-fields--new { grid-template-columns: 1fr; }
-  .fp__squash-actions { margin-left: 0; }
-  .fp__squash-input  { width: 100%; }
-}
+export default TestGenFormPanel;
