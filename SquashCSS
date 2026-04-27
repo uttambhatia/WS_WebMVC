@@ -1,0 +1,152 @@
+
+.fp__field-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  position: relative;
+}
+
+.fp__field-block--compact {
+  gap: 3px;
+}
+
+.fp__field-label {
+  font-size: var(--ubs-font-sz-xs);
+  font-weight: 600;
+  color: var(--ubs-c-text-subtle, #4b5563);
+  line-height: 1.2;
+}
+
+.fp__folder-suggest {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 12;
+  border: 1px solid var(--ubs-c-border-light, #d8dce3);
+  border-radius: var(--ubs-radius);
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.12);
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.fp__folder-suggest-item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 8px 10px;
+  font-size: var(--ubs-font-sz-sm);
+  color: var(--ubs-c-text, #111827);
+  cursor: pointer;
+}
+
+.fp__folder-suggest-item:hover,
+.fp__folder-suggest-item:focus-visible {
+  background: var(--ubs-c-surface-hover, #f3f4f6);
+  outline: none;
+}
+
+/* ---- Save to Squash (TestGenFormPanel) ---- */
+.fp__squash-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--ubs-sp-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.fp__squash-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ubs-sp-2);
+  flex: 1;
+  min-width: 0;
+  padding: var(--ubs-sp-2);
+  border: 1px solid var(--ubs-c-border-light, #d8dce3);
+  border-radius: var(--ubs-radius);
+  background: var(--ubs-c-surface-hover, #f8fafc);
+  animation: fp-fadein 0.15s ease both;
+}
+
+.fp__squash-mode-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ubs-sp-4);
+  flex-wrap: wrap;
+}
+
+.fp__squash-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ubs-sp-2);
+  font-size: var(--ubs-font-sz-sm);
+  color: var(--ubs-c-text);
+}
+
+.fp__squash-fields {
+  display: flex;
+  align-items: center;
+  gap: var(--ubs-sp-2);
+  flex-wrap: wrap;
+}
+
+.fp__squash-fields--new {
+  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(140px, 1fr));
+  gap: var(--ubs-sp-2);
+  width: 100%;
+}
+
+.fp__squash-field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ubs-sp-1);
+  min-width: 0;
+}
+
+.fp__squash-input {
+  width: 100%;
+  min-width: 140px;
+}
+
+.fp__squash-tick {
+  width: 20px;
+  height: 20px;
+  color: var(--ubs-c-green, #0d8a4f);
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fp__squash-tick svg {
+  width: 18px;
+  height: 18px;
+}
+
+.fp__squash-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ubs-sp-2);
+  margin-left: auto;
+}
+
+
+
+
+
+@media (max-width: 640px) {
+  .fp__export-bar    { flex-wrap: wrap; }
+  .fp__export-fields { flex-wrap: wrap; flex: 1 1 100%; }
+  .fp__export-input  { width: 100%; }
+  .fp__export-errors { flex-wrap: wrap; }
+  .fp__squash-wrap   { flex: 1 1 100%; flex-wrap: wrap; }
+  .fp__squash-panel  { flex: 1 1 100%; }
+  .fp__squash-fields--new { grid-template-columns: 1fr; }
+  .fp__squash-actions { margin-left: 0; }
+  .fp__squash-input  { width: 100%; }
+}
