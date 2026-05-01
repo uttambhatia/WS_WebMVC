@@ -1,41 +1,14 @@
-import InlineFullscreenPanel from "../shared/InlineFullscreenPanel";
+.cm__act-btn--dashboard {
+  background: #eef4ff;
+  color: #1f3b7a;
+  border: 1px solid #c9d8fb;
+}
 
-function ActionButtons({ row, onView, onResume, onApprove, onDashboard }) {
-
-  {status === "Completed" && (
-        <button
-          type="button"
-          className="cm__act-btn cm__act-btn--dashboard"
-          onClick={() => onDashboard(caseId)}
-        >
-          Dashboard
-        </button>
-      )}
-
-const [dashboardCaseId, setDashboardCaseId] = useState(null);
+.cm__act-btn--dashboard:hover {
+  background: #dde9ff;
+}
 
 
-  const handleDashboard = useCallback((caseId) => {
-    setDashboardCaseId(caseId);
-  }, []);
-
-  const closeDashboardPanel = useCallback(() => {
-    setDashboardCaseId(null);
-  }, []);
-
-onDashboard={handleDashboard}
-
- [handleView, handleResume, handleApprove, handleDashboard]
-
-{dashboardCaseId && (
-        <div className="cm__inline-panel-wrap">
-          <InlineFullscreenPanel
-            isOpen={Boolean(dashboardCaseId)}
-            onBack={closeDashboardPanel}
-            backLabel="Back to Cases"
-            title={`Dashboard: ${dashboardCaseId}`}
-            enableFullscreenToggle
-            compact
-          />
-        </div>
-      )}
+.cm__inline-panel-wrap {
+  margin-bottom: 1rem;
+}
