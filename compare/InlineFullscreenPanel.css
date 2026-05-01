@@ -1,0 +1,197 @@
+@import "../../styles/tokens.css";
+
+.ifs-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.ifs-panel--fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
+  background: var(--ubs-c-bg, #ffffff);
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.ifs-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0 0 0.75rem;
+  border-bottom: 1px solid var(--ubs-c-border-light, #e4eaf1);
+  background: transparent;
+}
+
+.ifs-panel--fullscreen .ifs-panel__header {
+  margin-bottom: 0;
+  padding: var(--ubs-sp-1, 4px) var(--ubs-sp-4, 16px);
+  min-height: 36px;
+  background: var(--ubs-c-bg, #ffffff);
+}
+
+.ifs-panel--fullscreen .ifs-panel__back-btn {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.35rem;
+}
+
+.ifs-panel--fullscreen .ifs-panel__title {
+  font-size: 0.75rem;
+}
+
+.ifs-panel--fullscreen .ifs-panel__toggle-btn {
+  width: 30px;
+  min-height: 28px;
+}
+
+.ifs-panel--fullscreen .ifs-panel__toggle-btn svg {
+  width: 18px;
+  height: 14px;
+}
+
+.ifs-panel__back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ubs-sp-2, 8px);
+  background: none;
+  border: none;
+  color: var(--ubs-c-red, #E2001A);
+  font-family: var(--ubs-font, Arial, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem 0.4rem;
+  border-radius: 4px;
+  transition: background 0.12s;
+}
+
+.ifs-panel__back-btn:hover {
+  background: rgba(226, 0, 26, 0.07);
+}
+
+.ifs-panel__header-right {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ubs-sp-3, 12px);
+  min-width: 0;
+}
+
+.ifs-panel__title {
+  font-family: var(--ubs-font, Arial, sans-serif);
+  font-size: var(--ubs-font-sz-sm, 0.8125rem);
+  font-weight: 600;
+  color: var(--ubs-c-text-muted, #5e7388);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ifs-panel__toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  width: 42px;
+  border: 1px solid var(--ubs-c-border, #d0d9e3);
+  border-radius: var(--ubs-radius-sm, 4px);
+  background: linear-gradient(180deg, #ffffff 0%, #f4f7fb 100%);
+  color: var(--ubs-c-text, #22303f);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.ifs-panel__toggle-btn:hover {
+  background: linear-gradient(180deg, #f8fbff 0%, #eaf1fb 100%);
+  box-shadow: 0 2px 8px rgba(0, 26, 51, 0.12);
+}
+
+.ifs-panel__toggle-btn:active {
+  transform: scale(0.96);
+}
+
+.ifs-panel__toggle-btn--active {
+  color: #0f4fa2;
+  border-color: #aac4ef;
+  background: linear-gradient(180deg, #edf4ff 0%, #dfeaff 100%);
+}
+
+.ifs-panel__toggle-btn svg {
+  width: 26px;
+  height: 20px;
+}
+
+/* ---- Compact header variant ---- */
+.ifs-panel__header--compact {
+  padding: var(--ubs-sp-1, 4px) var(--ubs-sp-4, 16px);
+  min-height: 36px;
+}
+
+.ifs-panel__header--compact .ifs-panel__back-btn {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.35rem;
+}
+
+.ifs-panel__header--compact .ifs-panel__title {
+  font-size: 0.75rem;
+}
+
+.ifs-panel__header--compact .ifs-panel__toggle-btn {
+  width: 30px;
+  min-height: 28px;
+}
+
+.ifs-panel__header--compact .ifs-panel__toggle-btn svg {
+  width: 18px;
+  height: 14px;
+}
+
+
+
+.ifs-panel__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0;
+}
+
+.ifs-panel--fullscreen .ifs-panel__body {
+  padding: var(--ubs-sp-4, 16px);
+}
+
+@media (max-width: 900px) {
+  .ifs-panel {
+    min-height: 0;
+  }
+
+  .ifs-panel__header {
+    padding-bottom: 0.75rem;
+  }
+
+  .ifs-panel--fullscreen .ifs-panel__header {
+    padding: var(--ubs-sp-1, 4px) var(--ubs-sp-3, 12px);
+  }
+
+  .ifs-panel__title {
+    max-width: 52vw;
+  }
+
+  .ifs-panel__toggle-btn {
+    padding: 0;
+    width: 34px;
+  }
+}
