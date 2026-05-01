@@ -1,0 +1,304 @@
+@import "../../styles/tokens.css";
+
+.cev__toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.cev__hover-group {
+  position: relative;
+}
+
+.cev__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 34px;
+  border-radius: 4px;
+  padding: 0 0.85rem;
+  font-family: var(--ubs-font, Arial, sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.cev__btn--primary {
+  background: var(--ubs-c-blue, #1565c0);
+  color: #fff;
+}
+
+.cev__btn--primary:hover {
+  background: var(--ubs-c-blue-dark, #0d4fa0);
+}
+
+.cev__btn--secondary {
+  background: #fff4d6;
+  color: #7c5a00;
+  border-color: #f2d890;
+}
+
+.cev__btn--secondary:hover {
+  background: #ffedbc;
+}
+
+.cev__btn-icon {
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+}
+
+.cev__btn-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cev__validation {
+  margin: 0;
+  width: 100%;
+  font-size: 0.8rem;
+  color: var(--ubs-c-red, #e2001a);
+}
+
+.cev__hover-card {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 20;
+  min-width: 260px;
+  max-width: 320px;
+  border: 1px solid var(--ubs-c-border-light, #e5e7eb);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(0, 26, 51, 0.16);
+}
+
+.cev__hover-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.65rem;
+  border-bottom: 1px solid var(--ubs-c-border-light, #e5e7eb);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ubs-c-text, #111827);
+}
+
+.cev__hover-card-title-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.cev__hover-card-meta {
+  font-size: 0.69rem;
+  font-weight: 600;
+  color: var(--ubs-c-text-muted, #6b7280);
+}
+
+.cev__hover-close,
+.cev__remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ubs-c-text-muted, #6b7280);
+  cursor: pointer;
+}
+
+.cev__hover-close:hover,
+.cev__remove-btn:hover {
+  background: var(--ubs-c-surface, #f5f7fa);
+  color: var(--ubs-c-text, #111827);
+}
+
+.cev__hover-close svg,
+.cev__remove-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+.cev__hover-card-body {
+  max-height: 220px;
+  overflow: auto;
+  padding: 0.35rem;
+}
+
+.cev__hover-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.45rem;
+  border-radius: 6px;
+}
+
+.cev__hover-row + .cev__hover-row {
+  margin-top: 0.2rem;
+}
+
+.cev__hover-row:hover {
+  background: var(--ubs-c-surface, #f5f7fa);
+}
+
+.cev__hover-meta {
+  margin-top: 0.1rem;
+  font-size: 0.72rem;
+  color: var(--ubs-c-text-muted, #6b7280);
+}
+
+.cev__hover-empty {
+  margin: 0;
+  padding: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--ubs-c-text-muted, #6b7280);
+}
+
+.cev__hover-rating {
+  display: inline-flex;
+  gap: 0.1rem;
+}
+
+.cev__star {
+  width: 14px;
+  height: 14px;
+  color: #d0d9e3;
+}
+
+.cev__star--filled {
+  color: #f5a623;
+}
+
+.cev__panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.cev__panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cev__title {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--ubs-c-text, #111827);
+}
+
+.cev__subtitle,
+.cev__difference-hint,
+.cev__state {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: var(--ubs-c-text-muted, #6b7280);
+}
+
+.cev__state--error {
+  color: var(--ubs-c-red, #e2001a);
+}
+
+.cev__table-wrap {
+  overflow: auto;
+  border: 1px solid var(--ubs-c-border, #d0d9e3);
+  border-radius: 8px;
+}
+
+.cev__table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.cev__table th,
+.cev__table td {
+  padding: 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid var(--ubs-c-border-light, #e5e7eb);
+  vertical-align: top;
+  font-size: 0.82rem;
+}
+
+.cev__table thead th {
+  background: var(--ubs-c-surface, #f5f7fa);
+  color: var(--ubs-c-text, #111827);
+}
+
+.cev__col-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.cev__col-meta {
+  margin-top: 0.18rem;
+  font-size: 0.72rem;
+  color: var(--ubs-c-text-muted, #6b7280);
+}
+
+.cev__metric-name,
+.cev__difference-cell {
+  font-weight: 700;
+}
+
+.cev__diff-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--ubs-c-text-muted, #6b7280);
+}
+
+.cev__rating-stars {
+  display: inline-flex;
+  gap: 0.15rem;
+  margin-top: 0.45rem;
+}
+
+.cev__rating-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #d0d9e3;
+  cursor: pointer;
+}
+
+.cev__rating-btn.is-active,
+.cev__rating-btn:hover {
+  color: #f5a623;
+}
+
+.cev__rating-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 900px) {
+  .cev__toolbar {
+    justify-content: flex-end;
+  }
+
+  .cev__panel-header {
+    flex-direction: column;
+  }
+
+  .cev__hover-card {
+    right: auto;
+    left: 0;
+    min-width: min(280px, 80vw);
+  }
+}

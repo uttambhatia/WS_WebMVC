@@ -1,0 +1,256 @@
+/* ============================================================
+   CaseManagementPage.css
+   ============================================================ */
+@import "../../styles/tokens.css";
+
+/* ---- Page shell ---- */
+.cm {
+  font-family: var(--ubs-font, Arial, sans-serif);
+  color: var(--ubs-c-text, #111827);
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 var(--ubs-sp-2, 0.5rem);
+  position: relative;
+}
+
+/* ---- Header row ---- */
+.cm__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ubs-sp-4, 1rem);
+  margin-bottom: 1.25rem;
+}
+
+.cm__header-actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cm__title {
+  font-size: var(--ubs-font-sz-xl, 1.25rem);
+  font-weight: 700;
+  color: var(--ubs-c-text, #111827);
+  margin: 0 0 0.2rem;
+}
+
+.cm__subtitle {
+  font-size: var(--ubs-font-sz-sm, 0.85rem);
+  color: var(--ubs-c-text-muted, #6b7280);
+  margin: 0;
+}
+
+.cm__inline-panel-wrap {
+  position: relative;
+  height: 0;
+  z-index: 40;
+}
+
+.cm__inline-panel-wrap + .cm__inline-panel-wrap {
+  margin-top: 0;
+}
+
+.cm__inline-panel-wrap > .ifs-panel:not(.ifs-panel--fullscreen) {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: var(--ubs-c-bg, #fff);
+  border: 1px solid var(--ubs-c-border-light, #e5e7eb);
+  border-radius: var(--ubs-radius-md, 8px);
+  box-shadow: var(--ubs-shadow-md, 0 4px 16px rgba(0, 26, 51, 0.12));
+  padding: 0.75rem;
+  max-height: min(78vh, 760px);
+  overflow: hidden;
+}
+
+.cm__inline-panel-wrap > .ifs-panel:not(.ifs-panel--fullscreen) .ifs-panel__body {
+  max-height: calc(min(78vh, 760px) - 70px);
+}
+
+/* ---- New Test Case button ---- */
+.cm__btn--new {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--ubs-c-red, #E2001A);
+  color: #fff;
+  border: none;
+  border-radius: var(--ubs-btn-radius, 4px);
+  padding: 0.45rem 1rem;
+  font-family: var(--ubs-font, Arial, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.cm__btn--new:hover {
+  background: var(--ubs-c-red-dark, #B80015);
+}
+
+/* ---- Toolbar (count + refresh) ---- */
+.cm__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.cm__count {
+  font-size: var(--ubs-font-sz-sm, 0.85rem);
+  color: var(--ubs-c-text-muted, #6b7280);
+}
+
+.cm__refresh-btn {
+  background: none;
+  border: 1px solid var(--ubs-c-border-light, #e5e7eb);
+  border-radius: 4px;
+  color: var(--ubs-c-text-muted, #6b7280);
+  font-family: var(--ubs-font, Arial, sans-serif);
+  font-size: 0.75rem;
+  padding: 0.2rem 0.55rem;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.cm__refresh-btn:hover {
+  background: var(--ubs-c-surface, #f8f9fb);
+}
+
+/* ---- Loading / error messages ---- */
+.cm__message {
+  font-size: 0.875rem;
+  color: var(--ubs-c-text-muted, #6b7280);
+  padding: 2rem;
+  text-align: center;
+  margin: 0;
+}
+
+.cm__message--error {
+  color: var(--ubs-c-red, #E2001A);
+}
+
+/* ---- Status badge ---- */
+.cm__badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.cm__badge--green  { background: #dcfce7; color: #166534; }
+.cm__badge--yellow { background: #fef9c3; color: #78350f; }
+.cm__badge--red    { background: #fee2e2; color: #991b1b; }
+.cm__badge--blue   { background: #dbeafe; color: #1e40af; }
+
+/* ---- Row action buttons ---- */
+.cm__row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.cm__act-btn {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  font-family: var(--ubs-font, Arial, sans-serif);
+  font-size: 0.775rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s;
+  line-height: 1.4;
+}
+
+.cm__act-btn--primary {
+  background: var(--ubs-c-red, #E2001A);
+  color: #fff;
+  border: 1px solid transparent;
+}
+.cm__act-btn--primary:hover { background: var(--ubs-c-red-dark, #B80015); }
+
+.cm__act-btn--secondary {
+  background: var(--ubs-btn-grey-bg, #f3f4f6);
+  color: var(--ubs-btn-grey-text, #374151);
+  border: 1px solid var(--ubs-c-border-light, #e5e7eb);
+}
+.cm__act-btn--secondary:hover { background: var(--ubs-btn-grey-bg-hover, #e5e7eb); }
+
+.cm__act-btn--ghost {
+  background: transparent;
+  color: var(--ubs-c-text-subtle, #6b7280);
+  border: 1px solid var(--ubs-c-border, #d1d5db);
+}
+.cm__act-btn--ghost:hover {
+  background: var(--ubs-c-surface-hover, #f3f4f6);
+  color: var(--ubs-c-text, #111827);
+}
+
+.cm__act-btn--dashboard {
+  background: #eef4ff;
+  color: #1f3b7a;
+  border: 1px solid #c9d8fb;
+}
+
+.cm__act-btn--dashboard:hover {
+  background: #dde9ff;
+}
+
+/* ---- Back bar (create/view/resume sub-views) ---- */
+.cm__back-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--ubs-c-border-light, #e5e7eb);
+}
+
+.cm__back-btn {
+  background: none;
+  border: none;
+  color: var(--ubs-c-red, #E2001A);
+  font-family: var(--ubs-font, Arial, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem 0.4rem;
+  border-radius: 4px;
+  transition: background 0.12s;
+}
+
+.cm__back-btn:hover {
+  background: rgba(226, 0, 26, 0.07);
+}
+
+.cm__back-label {
+  font-size: 0.85rem;
+  color: var(--ubs-c-text-muted, #6b7280);
+}
+
+.cm__back-label strong {
+  color: var(--ubs-c-text, #111827);
+}
+
+@media (max-width: 900px) {
+  .cm__header {
+    flex-direction: column;
+  }
+
+  .cm__header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
