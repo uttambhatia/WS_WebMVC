@@ -1,14 +1,717 @@
-.cm__act-btn--dashboard {
-  background: #eef4ff;
-  color: #1f3b7a;
-  border: 1px solid #c9d8fb;
-}
-
-.cm__act-btn--dashboard:hover {
-  background: #dde9ff;
-}
-
-
-.cm__inline-panel-wrap {
-  margin-bottom: 1rem;
+{
+    "caseId": "TST-C001-DC79EF99",
+    "completedUpTo": 4,
+    "stageData": {
+        "case-id": "TST-C001-DC79EF99",
+        "upload-doc": {
+            "taskId": "ProcessTask_UploadDoc-DAC7EBE4",
+            "uploadSource": "document",
+            "fileName": "पेड़.docx"
+        },
+        "approval": {
+            "decision": "approve",
+            "comment": "apprvd",
+            "approvedBy": "Nina Blackwell"
+        },
+        "test-gen": {
+            "taskId": "ProcessTask_TestGen-7F5A4582",
+            "testcases": [
+                {
+                    "testCaseId": "TC001",
+                    "requirementId": "REQ-201",
+                    "testDescription": "Verify that the Client Advisor can log in and locate a client using a valid SG BR number.",
+                    "preconditions": [
+                        "Client Advisor has valid login credentials.",
+                        "System is online and accessible."
+                    ],
+                    "testStepAction": [
+                        "Navigate to the SecTrader login page.",
+                        "Enter valid username and password, then click the login button.",
+                        "Enter a valid SG BR number in the client search field and click search."
+                    ]
+                },
+                {
+                    "testCaseId": "TC002",
+                    "requirementId": "REQ-201",
+                    "testDescription": "Verify that the system displays an error message when an invalid SG BR number is entered.",
+                    "preconditions": [
+                        "Client Advisor has valid login credentials.",
+                        "System is online and accessible."
+                    ],
+                    "testStepAction": [
+                        "Navigate to the SecTrader login page.",
+                        "Enter valid username and password, then click the login button.",
+                        "Enter an invalid SG BR number in the client search field and click search."
+                    ]
+                },
+                {
+                    "testCaseId": "TC003",
+                    "requirementId": "REQ-201",
+                    "testDescription": "Verify that the Client Advisor can access the 'BUY' order workflow for funds.",
+                    "preconditions": [
+                        "Client Advisor is logged into the system.",
+                        "Client has been successfully located using a valid SG BR number."
+                    ],
+                    "testStepAction": [
+                        "Navigate to the client's profile page.",
+                        "Click on the 'BUY' order workflow for funds."
+                    ]
+                },
+                {
+                    "testCaseId": "TC004",
+                    "requirementId": "REQ-201",
+                    "testDescription": "Verify that the Client Advisor can select a fund instrument, uncheck smart routing, and choose custody/cash accounts.",
+                    "preconditions": [
+                        "Client Advisor is logged into the system.",
+                        "Client has been successfully located using a valid SG BR number.",
+                        "'BUY' order workflow page is open."
+                    ],
+                    "testStepAction": [
+                        "Select a fund instrument from the available list.",
+                        "Uncheck the smart routing option.",
+                        "Choose custody and cash accounts from the dropdown menus."
+                    ]
+                },
+                {
+                    "testCaseId": "TC005",
+                    "requirementId": "REQ-201",
+                    "testDescription": "Verify that the Client Advisor can enter Contact Management ID, product suitability data, and order data.",
+                    "preconditions": [
+                        "Client Advisor is logged into the system.",
+                        "Client has been successfully located using a valid SG BR number.",
+                        "'BUY' order workflow page is open."
+                    ],
+                    "testStepAction": [
+                        "Enter a valid Contact Management ID.",
+                        "Enter valid product suitability data (mode of contact, personal investment advice).",
+                        "Enter valid order data (quantity, price, instrument, trader's note)."
+                    ]
+                },
+                {
+                    "testCaseId": "TC006",
+                    "requirementId": "REQ-201",
+                    "testDescription": "Verify that the system displays an error message when required fields are missing during order entry.",
+                    "preconditions": [
+                        "Client Advisor is logged into the system.",
+                        "Client has been successfully located using a valid SG BR number.",
+                        "'BUY' order workflow page is open."
+                    ],
+                    "testStepAction": [
+                        "Leave one or more required fields empty."
+                    ]
+                },
+                {
+                    "testCaseId": "TC007",
+                    "requirementId": "REQ-201",
+                    "testDescription": "Verify that the Client Advisor can review and submit the order successfully.",
+                    "preconditions": [
+                        "Client Advisor is logged into the system.",
+                        "Client has been successfully located using a valid SG BR number.",
+                        "'BUY' order workflow page is open.",
+                        "All required fields are filled with valid data."
+                    ],
+                    "testStepAction": [
+                        "Click on the 'Review' button.",
+                        "Verify the order details and click on the 'Submit' button."
+                    ]
+                },
+                {
+                    "testCaseId": "TC008",
+                    "requirementId": "REQ-201",
+                    "testDescription": "Verify that the system does not allow submission of an order with invalid data.",
+                    "preconditions": [
+                        "Client Advisor is logged into the system.",
+                        "Client has been successfully located using a valid SG BR number.",
+                        "'BUY' order workflow page is open."
+                    ],
+                    "testStepAction": [
+                        "Enter invalid data in one or more fields (e.g., negative quantity, invalid price).",
+                        "Attempt to submit the order."
+                    ]
+                },
+                {
+                    "testCaseId": "TC009",
+                    "requirementId": "REQ-201",
+                    "testDescription": "Verify that the system successfully registers the order and displays a confirmation message.",
+                    "preconditions": [
+                        "Client Advisor is logged into the system.",
+                        "Client has been successfully located using a valid SG BR number.",
+                        "'BUY' order workflow page is open.",
+                        "All required fields are filled with valid data.",
+                        "Order has been successfully submitted."
+                    ],
+                    "testStepAction": [
+                        "Submit the order.",
+                        "Verify the confirmation message displayed on the screen."
+                    ]
+                }
+            ],
+            "rawTestGenerationJson": {
+                "jobId": "2",
+                "validationResult": "approve",
+                "conversationId": "501",
+                "testGenerationResult": {
+                    "details": [
+                        {
+                            "filename": "English_Ordering_Entry.pdf",
+                            "test_cases": [
+                                {
+                                    "testCaseId": "TC001",
+                                    "testType": "Positive",
+                                    "requirementId": "REQ-201",
+                                    "testDescription": "Verify that the Client Advisor can log in and locate a client using a valid SG BR number.",
+                                    "preConditions": [
+                                        "Client Advisor has valid login credentials.",
+                                        "System is online and accessible."
+                                    ],
+                                    "testSteps": [
+                                        {
+                                            "index": 1,
+                                            "action": "Navigate to the SecTrader login page.",
+                                            "expectedResult": "Login page is displayed."
+                                        },
+                                        {
+                                            "index": 2,
+                                            "action": "Enter valid username and password, then click the login button.",
+                                            "expectedResult": "Client Advisor is successfully logged in and redirected to the dashboard."
+                                        },
+                                        {
+                                            "index": 3,
+                                            "action": "Enter a valid SG BR number in the client search field and click search.",
+                                            "expectedResult": "The client associated with the SG BR number is displayed."
+                                        }
+                                    ]
+                                },
+                                {
+                                    "testCaseId": "TC002",
+                                    "testType": "Negative",
+                                    "requirementId": "REQ-201",
+                                    "testDescription": "Verify that the system displays an error message when an invalid SG BR number is entered.",
+                                    "preConditions": [
+                                        "Client Advisor has valid login credentials.",
+                                        "System is online and accessible."
+                                    ],
+                                    "testSteps": [
+                                        {
+                                            "index": 1,
+                                            "action": "Navigate to the SecTrader login page.",
+                                            "expectedResult": "Login page is displayed."
+                                        },
+                                        {
+                                            "index": 2,
+                                            "action": "Enter valid username and password, then click the login button.",
+                                            "expectedResult": "Client Advisor is successfully logged in and redirected to the dashboard."
+                                        },
+                                        {
+                                            "index": 3,
+                                            "action": "Enter an invalid SG BR number in the client search field and click search.",
+                                            "expectedResult": "An error message is displayed indicating that the client could not be found."
+                                        }
+                                    ]
+                                },
+                                {
+                                    "testCaseId": "TC003",
+                                    "testType": "Positive",
+                                    "requirementId": "REQ-201",
+                                    "testDescription": "Verify that the Client Advisor can access the 'BUY' order workflow for funds.",
+                                    "preConditions": [
+                                        "Client Advisor is logged into the system.",
+                                        "Client has been successfully located using a valid SG BR number."
+                                    ],
+                                    "testSteps": [
+                                        {
+                                            "index": 1,
+                                            "action": "Navigate to the client's profile page.",
+                                            "expectedResult": "Client's profile page is displayed."
+                                        },
+                                        {
+                                            "index": 2,
+                                            "action": "Click on the 'BUY' order workflow for funds.",
+                                            "expectedResult": "The 'BUY' order workflow page is displayed."
+                                        }
+                                    ]
+                                },
+                                {
+                                    "testCaseId": "TC004",
+                                    "testType": "Positive",
+                                    "requirementId": "REQ-201",
+                                    "testDescription": "Verify that the Client Advisor can select a fund instrument, uncheck smart routing, and choose custody/cash accounts.",
+                                    "preConditions": [
+                                        "Client Advisor is logged into the system.",
+                                        "Client has been successfully located using a valid SG BR number.",
+                                        "'BUY' order workflow page is open."
+                                    ],
+                                    "testSteps": [
+                                        {
+                                            "index": 1,
+                                            "action": "Select a fund instrument from the available list.",
+                                            "expectedResult": "The selected fund instrument is displayed."
+                                        },
+                                        {
+                                            "index": 2,
+                                            "action": "Uncheck the smart routing option.",
+                                            "expectedResult": "The smart routing option is unchecked."
+                                        },
+                                        {
+                                            "index": 3,
+                                            "action": "Choose custody and cash accounts from the dropdown menus.",
+                                            "expectedResult": "The selected custody and cash accounts are displayed."
+                                        }
+                                    ]
+                                },
+                                {
+                                    "testCaseId": "TC005",
+                                    "testType": "Positive",
+                                    "requirementId": "REQ-201",
+                                    "testDescription": "Verify that the Client Advisor can enter Contact Management ID, product suitability data, and order data.",
+                                    "preConditions": [
+                                        "Client Advisor is logged into the system.",
+                                        "Client has been successfully located using a valid SG BR number.",
+                                        "'BUY' order workflow page is open."
+                                    ],
+                                    "testSteps": [
+                                        {
+                                            "index": 1,
+                                            "action": "Enter a valid Contact Management ID.",
+                                            "expectedResult": "The Contact Management ID is accepted without errors."
+                                        },
+                                        {
+                                            "index": 2,
+                                            "action": "Enter valid product suitability data (mode of contact, personal investment advice).",
+                                            "expectedResult": "The product suitability data is accepted without errors."
+                                        },
+                                        {
+                                            "index": 3,
+                                            "action": "Enter valid order data (quantity, price, instrument, trader's note).",
+                                            "expectedResult": "The order data is accepted without errors."
+                                        }
+                                    ]
+                                },
+                                {
+                                    "testCaseId": "TC006",
+                                    "testType": "Negative",
+                                    "requirementId": "REQ-201",
+                                    "testDescription": "Verify that the system displays an error message when required fields are missing during order entry.",
+                                    "preConditions": [
+                                        "Client Advisor is logged into the system.",
+                                        "Client has been successfully located using a valid SG BR number.",
+                                        "'BUY' order workflow page is open."
+                                    ],
+                                    "testSteps": [
+                                        {
+                                            "index": 1,
+                                            "action": "Leave one or more required fields empty.",
+                                            "expectedResult": "The system displays an error message indicating the missing required fields."
+                                        }
+                                    ]
+                                },
+                                {
+                                    "testCaseId": "TC007",
+                                    "testType": "Positive",
+                                    "requirementId": "REQ-201",
+                                    "testDescription": "Verify that the Client Advisor can review and submit the order successfully.",
+                                    "preConditions": [
+                                        "Client Advisor is logged into the system.",
+                                        "Client has been successfully located using a valid SG BR number.",
+                                        "'BUY' order workflow page is open.",
+                                        "All required fields are filled with valid data."
+                                    ],
+                                    "testSteps": [
+                                        {
+                                            "index": 1,
+                                            "action": "Click on the 'Review' button.",
+                                            "expectedResult": "The order review page is displayed with all entered details."
+                                        },
+                                        {
+                                            "index": 2,
+                                            "action": "Verify the order details and click on the 'Submit' button.",
+                                            "expectedResult": "The order is successfully submitted, and a confirmation message is displayed."
+                                        }
+                                    ]
+                                },
+                                {
+                                    "testCaseId": "TC008",
+                                    "testType": "Negative",
+                                    "requirementId": "REQ-201",
+                                    "testDescription": "Verify that the system does not allow submission of an order with invalid data.",
+                                    "preConditions": [
+                                        "Client Advisor is logged into the system.",
+                                        "Client has been successfully located using a valid SG BR number.",
+                                        "'BUY' order workflow page is open."
+                                    ],
+                                    "testSteps": [
+                                        {
+                                            "index": 1,
+                                            "action": "Enter invalid data in one or more fields (e.g., negative quantity, invalid price).",
+                                            "expectedResult": "The system displays an error message indicating the invalid data."
+                                        },
+                                        {
+                                            "index": 2,
+                                            "action": "Attempt to submit the order.",
+                                            "expectedResult": "The system does not allow the order to be submitted and displays an error message."
+                                        }
+                                    ]
+                                },
+                                {
+                                    "testCaseId": "TC009",
+                                    "testType": "Positive",
+                                    "requirementId": "REQ-201",
+                                    "testDescription": "Verify that the system successfully registers the order and displays a confirmation message.",
+                                    "preConditions": [
+                                        "Client Advisor is logged into the system.",
+                                        "Client has been successfully located using a valid SG BR number.",
+                                        "'BUY' order workflow page is open.",
+                                        "All required fields are filled with valid data.",
+                                        "Order has been successfully submitted."
+                                    ],
+                                    "testSteps": [
+                                        {
+                                            "index": 1,
+                                            "action": "Submit the order.",
+                                            "expectedResult": "The order is successfully registered in the system."
+                                        },
+                                        {
+                                            "index": 2,
+                                            "action": "Verify the confirmation message displayed on the screen.",
+                                            "expectedResult": "A confirmation message is displayed with the order details."
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "initiator": "t999999",
+                "Done - Requirement Validation": true,
+                "agentStatus": "Complete",
+                "agentResponse": {
+                    "request_type": "form",
+                    "questions": [
+                        {
+                            "question": "Please review the validated requirements and choose Approve or Reject.",
+                            "type": "text",
+                            "reason": {
+                                "version": "1.0",
+                                "message_type": "response",
+                                "source": {
+                                    "name": "test-management-agent",
+                                    "created_ts": "2025-07-10T14:07:59.849190Z"
+                                },
+                                "target": {
+                                    "name": "human_interface"
+                                },
+                                "metadata": {
+                                    "conversation_id": 8680,
+                                    "job_id": 124032,
+                                    "task_id": 153815,
+                                    "agent_thread_id": null
+                                },
+                                "payload": {
+                                    "task": {
+                                        "request": null,
+                                        "result": {
+                                            "details": [
+                                                {
+                                                    "filename": "5734.pdf",
+                                                    "requirement": {
+                                                        "requirements": [
+                                                            {
+                                                                "requirement_id": "[SOW-UI: Feature] List of Claims: New Table Structure for Business Profits",
+                                                                "title": "List of Claims: New Table Structure for Business Profits",
+                                                                "mandatory_fields_check": {
+                                                                    "Requirement ID/Reference": true,
+                                                                    "Title/Summary": true,
+                                                                    "Description": true,
+                                                                    "Acceptance Criteria": false,
+                                                                    "Priority": false,
+                                                                    "Author/Owner": false,
+                                                                    "Date Created/Last Updated": false,
+                                                                    "Status": false,
+                                                                    "Justification": false,
+                                                                    "Stakeholders": false,
+                                                                    "Version/Revision History": false,
+                                                                    "Related Documents/References": false,
+                                                                    "Comments": false
+                                                                },
+                                                                "missing_fields": [
+                                                                    "Acceptance Criteria",
+                                                                    "Priority",
+                                                                    "Author/Owner",
+                                                                    "Date Created/Last Updated",
+                                                                    "Status",
+                                                                    "Justification",
+                                                                    "Stakeholders",
+                                                                    "Version/Revision History",
+                                                                    "Related Documents/References",
+                                                                    "Comments"
+                                                                ],
+                                                                "hitl_actions": [
+                                                                    "Add Acceptance Criteria to define when the requirement is complete.",
+                                                                    "Specify Priority to determine the importance of this requirement.",
+                                                                    "Include Author/Owner information for accountability.",
+                                                                    "Provide Date Created/Last Updated for tracking changes.",
+                                                                    "Add Status to indicate the current state of the requirement.",
+                                                                    "Include Justification to explain why this requirement is necessary.",
+                                                                    "List Stakeholders to identify who is impacted or involved.",
+                                                                    "Provide Version/Revision History for tracking updates.",
+                                                                    "Add Related Documents/References for context.",
+                                                                    "Include Comments for additional notes or clarifications."
+                                                                ],
+                                                                "Images": {
+                                                                    "present": false,
+                                                                    "referenced": false,
+                                                                    "described": false,
+                                                                    "image_list": [],
+                                                                    "missing_images": []
+                                                                },
+                                                                "Tables": {
+                                                                    "present": true,
+                                                                    "referenced": true,
+                                                                    "described": true,
+                                                                    "table_list": [
+                                                                        {
+                                                                            "table_id": "Annual Income Table",
+                                                                            "title": "Annual Income Table",
+                                                                            "reference_in_text": true,
+                                                                            "description": "Table detailing years, roles held, shareholding, company revenue, company net profits, and CAGR."
+                                                                        },
+                                                                        {
+                                                                            "table_id": "Asset Valuation Table",
+                                                                            "title": "Asset Valuation Table",
+                                                                            "reference_in_text": true,
+                                                                            "description": "Table detailing seed capital, shareholding, company valuation, and listing status."
+                                                                        }
+                                                                    ],
+                                                                    "missing_tables": []
+                                                                },
+                                                                "user_story_validation": [
+                                                                    {
+                                                                        "criterion": "Independent",
+                                                                        "meets": true,
+                                                                        "explanation": "The requirement is standalone and does not depend on other requirements.",
+                                                                        "hitl_action": ""
+                                                                    },
+                                                                    {
+                                                                        "criterion": "Testable",
+                                                                        "meets": false,
+                                                                        "explanation": "The requirement lacks specific, measurable criteria for testing.",
+                                                                        "hitl_action": "Add measurable criteria to ensure the requirement is testable."
+                                                                    },
+                                                                    {
+                                                                        "criterion": "Acceptance Criteria",
+                                                                        "meets": false,
+                                                                        "explanation": "Acceptance criteria are missing.",
+                                                                        "hitl_action": "Define clear acceptance criteria for the requirement."
+                                                                    },
+                                                                    {
+                                                                        "criterion": "Small",
+                                                                        "meets": true,
+                                                                        "explanation": "The requirement is concise and manageable within a sprint.",
+                                                                        "hitl_action": ""
+                                                                    },
+                                                                    {
+                                                                        "criterion": "Clear and Unambiguous",
+                                                                        "meets": true,
+                                                                        "explanation": "The requirement is written clearly without ambiguity.",
+                                                                        "hitl_action": ""
+                                                                    },
+                                                                    {
+                                                                        "criterion": "Consistent",
+                                                                        "meets": true,
+                                                                        "explanation": "The requirement does not conflict with other requirements.",
+                                                                        "hitl_action": ""
+                                                                    },
+                                                                    {
+                                                                        "criterion": "Necessary",
+                                                                        "meets": true,
+                                                                        "explanation": "The requirement is essential to the project objectives.",
+                                                                        "hitl_action": ""
+                                                                    },
+                                                                    {
+                                                                        "criterion": "Feasible",
+                                                                        "meets": true,
+                                                                        "explanation": "The requirement is realistic within time and technology constraints.",
+                                                                        "hitl_action": ""
+                                                                    },
+                                                                    {
+                                                                        "criterion": "Traceable",
+                                                                        "meets": false,
+                                                                        "explanation": "The requirement lacks unique identification and traceability.",
+                                                                        "hitl_action": "Add unique identifiers to ensure traceability."
+                                                                    },
+                                                                    {
+                                                                        "criterion": "Understandable",
+                                                                        "meets": true,
+                                                                        "explanation": "The requirement is easily understood by stakeholders.",
+                                                                        "hitl_action": ""
+                                                                    },
+                                                                    {
+                                                                        "criterion": "Modifiable",
+                                                                        "meets": false,
+                                                                        "explanation": "The requirement is not structured for easy updates.",
+                                                                        "hitl_action": "Structure the requirement to allow for easy modifications."
+                                                                    }
+                                                                ],
+                                                                "quality_rating": {
+                                                                    "quality_comment": "Fair",
+                                                                    "quality_rating": "55%",
+                                                                    "quality_rating_explanation": "The requirement has several missing mandatory fields and fails to meet key user story criteria such as testability, acceptance criteria, traceability, and modifiability."
+                                                                },
+                                                                "summary": [
+                                                                    {
+                                                                        "mandatory_fields_status": "Incomplete",
+                                                                        "user_story_quality_status": "Fair",
+                                                                        "next_steps_for_hitl": [
+                                                                            "Add missing mandatory fields such as Acceptance Criteria, Priority, Author/Owner, etc.",
+                                                                            "Define measurable criteria for testing.",
+                                                                            "Add unique identifiers for traceability.",
+                                                                            "Structure the requirement for easy modifications."
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ],
+                                                        "summary_report": {
+                                                            "total_requirements": 1,
+                                                            "requirements_complete": 0,
+                                                            "requirements_incomplete": 1,
+                                                            "details": [
+                                                                {
+                                                                    "requirement_id": "[SOW-UI: Feature] List of Claims: New Table Structure for Business Profits",
+                                                                    "mandatory_field_status": "Incomplete"
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "error": null,
+                "status": "completed",
+                "skill": "default",
+                "errors": null,
+                "shared_resources": null,
+                "ai_response": "NA",
+                "outcomes": [
+                    "Submit"
+                ]
+            }
+        },
+        "validation": {
+            "taskId": "ProcessTask_Validation-29FD12B6",
+            "document": "5734.pdf",
+            "quality_percentage": "55%",
+            "rating": "Fair",
+            "rating_explanation": "The requirement has several missing mandatory fields and fails to meet key user story criteria such as testability, acceptance criteria, traceability, and modifiability.",
+            "action_items": [
+                {
+                    "requirementId": "[SOW-UI: Feature] List of Claims: New Table Structure for Business Profits",
+                    "missingFields": [
+                        "Acceptance Criteria",
+                        "Priority",
+                        "Author/Owner",
+                        "Date Created/Last Updated",
+                        "Status",
+                        "Justification",
+                        "Stakeholders",
+                        "Version/Revision History",
+                        "Related Documents/References",
+                        "Comments"
+                    ],
+                    "recommendation": [
+                        "Add Acceptance Criteria to define when the requirement is complete.",
+                        "Specify Priority to determine the importance of this requirement.",
+                        "Include Author/Owner information for accountability.",
+                        "Provide Date Created/Last Updated for tracking changes.",
+                        "Add Status to indicate the current state of the requirement.",
+                        "Include Justification to explain why this requirement is necessary.",
+                        "List Stakeholders to identify who is impacted or involved.",
+                        "Provide Version/Revision History for tracking updates.",
+                        "Add Related Documents/References for context.",
+                        "Include Comments for additional notes or clarifications."
+                    ]
+                }
+            ],
+            "user_story_criteria": [
+                {
+                    "criterion": "Independent",
+                    "criterionMeets": true,
+                    "explanation": "The requirement is standalone and does not depend on other requirements.",
+                    "recommendation": ""
+                },
+                {
+                    "criterion": "Testable",
+                    "criterionMeets": false,
+                    "explanation": "The requirement lacks specific, measurable criteria for testing.",
+                    "recommendation": "Add measurable criteria to ensure the requirement is testable."
+                },
+                {
+                    "criterion": "Acceptance Criteria",
+                    "criterionMeets": false,
+                    "explanation": "Acceptance criteria are missing.",
+                    "recommendation": "Define clear acceptance criteria for the requirement."
+                },
+                {
+                    "criterion": "Small",
+                    "criterionMeets": true,
+                    "explanation": "The requirement is concise and manageable within a sprint.",
+                    "recommendation": ""
+                },
+                {
+                    "criterion": "Clear and Unambiguous",
+                    "criterionMeets": true,
+                    "explanation": "The requirement is written clearly without ambiguity.",
+                    "recommendation": ""
+                },
+                {
+                    "criterion": "Consistent",
+                    "criterionMeets": true,
+                    "explanation": "The requirement does not conflict with other requirements.",
+                    "recommendation": ""
+                },
+                {
+                    "criterion": "Necessary",
+                    "criterionMeets": true,
+                    "explanation": "The requirement is essential to the project objectives.",
+                    "recommendation": ""
+                },
+                {
+                    "criterion": "Feasible",
+                    "criterionMeets": true,
+                    "explanation": "The requirement is realistic within time and technology constraints.",
+                    "recommendation": ""
+                },
+                {
+                    "criterion": "Traceable",
+                    "criterionMeets": false,
+                    "explanation": "The requirement lacks unique identification and traceability.",
+                    "recommendation": "Add unique identifiers to ensure traceability."
+                },
+                {
+                    "criterion": "Understandable",
+                    "criterionMeets": true,
+                    "explanation": "The requirement is easily understood by stakeholders.",
+                    "recommendation": ""
+                },
+                {
+                    "criterion": "Modifiable",
+                    "criterionMeets": false,
+                    "explanation": "The requirement is not structured for easy updates.",
+                    "recommendation": "Structure the requirement to allow for easy modifications."
+                }
+            ],
+            "summary_report": [
+                {
+                    "requirementId": "[SOW-UI: Feature] List of Claims: New Table Structure for Business Profits",
+                    "mandatoryFieldItems": "Incomplete"
+                }
+            ]
+        }
+    }
 }
