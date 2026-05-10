@@ -1,287 +1,318 @@
-import { useEffect, useMemo, useState } from "react";
-import "./left-nav.css";
-
-function LeftNavItem({
-  item,
-  level,
-  collapsed,
-  selectedId,
-  onSelect,
-  enableMainMenuCollapse,
-  expandedMainMenuIds,
-  selectedItemBgColor,
-  selectedItemTextColor,
-  enableSelectedItemCustomStyling,
-}) {
-  const isSelected = selectedId === item.id;
-  const hasChildren = Array.isArray(item.children) && item.children.length > 0;
-  const canToggleMainMenu = enableMainMenuCollapse && level === 0 && hasChildren;
-  const isExpanded = !canToggleMainMenu || expandedMainMenuIds.has(item.id);
-
-  const selectedStyle = enableSelectedItemCustomStyling && isSelected ? {
-    backgroundColor: selectedItemBgColor || "#E2001A",
-    color: selectedItemTextColor || "#ffffff",
-  } : {};
-
-  return (
-    <li className="left-nav__item">
-      <button
-        type="button"
-        className={`left-nav__button ${isSelected ? "left-nav__button--selected" : ""}`}
-        style={{ paddingLeft: `${12 + level * 12}px`, ...selectedStyle }}
-        onClick={() => onSelect(item, { canToggleMainMenu })}
-      >
-        <span
-          className="left-nav__icon"
-          aria-hidden="true"
-          style={enableSelectedItemCustomStyling && isSelected ? { color: selectedItemTextColor || "#ffffff" } : {}}
-        >
-          {item.icon}
-        </span>
-          {!collapsed && (
-            <span
-              className="left-nav__text"
-              style={enableSelectedItemCustomStyling && isSelected ? { color: selectedItemTextColor || "#ffffff" } : {}}
-            >
-              {item.label}
-            </span>
-          )}
-        {!collapsed && canToggleMainMenu && (
-          <span className="left-nav__group-indicator" aria-hidden="true">
-            {isExpanded ? "-" : "+"}
-          </span>
-        )}
-      </button>
-
-      {hasChildren && isExpanded && (
-        <ul className="left-nav__list">
-          {item.children.map((child) => (
-            <LeftNavItem
-              key={child.id}
-              item={child}
-              level={level + 1}
-              collapsed={collapsed}
-              selectedId={selectedId}
-              onSelect={onSelect}
-              enableMainMenuCollapse={enableMainMenuCollapse}
-              expandedMainMenuIds={expandedMainMenuIds}
-              selectedItemBgColor={selectedItemBgColor}
-              selectedItemTextColor={selectedItemTextColor}
-              enableSelectedItemCustomStyling={enableSelectedItemCustomStyling}
-            />
-          ))}
-        </ul>
-      )}
-    </li>
-  );
+:root {
+  --nav-bg: #ffffff;
+  --nav-border: #d8dee4;
+  --nav-text: #2d3640;
+  --nav-text-selected: #cf1b1b;
+  --nav-hover: #f4f6f8;
+  --nav-radius: 14px;
 }
 
-export default function LeftNav({
-  items,
-  initialCollapsed = false,
-  onChange,
-  ariaLabel = "Main navigation",
-  className = "",
-  enableMobileOverlay = false,
-  mobileBreakpoint = 900,
-  enableMainMenuCollapse = false,
-  expandMainMenusByDefault = true,
-  enableCollapseTooltip = false,
-  selectedItemBgColor = "#E2001A",
-  selectedItemTextColor = "#ffffff",
-  enableSelectedItemCustomStyling = false,
-}) {
-  const [collapsed, setCollapsed] = useState(initialCollapsed);
-  const [isMobileView, setIsMobileView] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+.left-nav {
+  width: 260px;
+  min-width: 260px;
+  height: calc(100vh - 24px);
+  height: calc(100dvh - 24px);
+  margin: 12px 0 12px 12px;
+  background: var(--nav-bg);
+  border: 1px solid var(--nav-border);
+  border-radius: var(--nav-radius);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.2s ease, min-width 0.2s ease;
+  overflow: visible;
+  z-index: 10;
+}
 
-  useEffect(() => {
-    if (!enableMobileOverlay) {
-      setIsMobileView(false);
-      setMobileOpen(false);
-      return;
-    }
+.left-nav--collapsed {
+  width: 72px;
+  min-width: 72px;
+}
 
-    const mediaQuery = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`);
-    const updateMode = (event) => {
-      const matches = event.matches ?? mediaQuery.matches;
-      setIsMobileView(matches);
-      if (!matches) {
-        setMobileOpen(false);
-      }
-    };
+.left-nav--collapsed .left-nav__header {
+  justify-content: flex-start;
+  padding-left: 0;
+}
 
-    updateMode(mediaQuery);
+.left-nav--collapsed .left-nav__collapse-toggle {
+  margin-left: -1px;
+  margin-right: 0;
+}
 
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener("change", updateMode);
-      return () => mediaQuery.removeEventListener("change", updateMode);
-    }
+.left-nav__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0 8px 10px;
+  border-bottom: none;
+  padding-right: 0;
+  margin-right: 0;
+  position: relative;
+  z-index: 2;
+}
 
-    mediaQuery.addListener(updateMode);
-    return () => mediaQuery.removeListener(updateMode);
-  }, [enableMobileOverlay, mobileBreakpoint]);
+.left-nav__title {
+  font-size: 0.95rem;
+  color: var(--nav-text);
+  font-weight: 600;
+}
 
-  const allIds = useMemo(() => {
-    const result = [];
-    const walk = (nodes) => {
-      (nodes || []).forEach((node) => {
-        result.push(node.id);
-        if (Array.isArray(node.children) && node.children.length > 0) {
-          walk(node.children);
-        }
-      });
-    };
-    walk(items || []);
-    return result;
-  }, [items]);
+.left-nav__collapse-toggle {
+  width: 51px;
+  height: 100%;
+  min-height: 29px;
+  border: 0;
+  border-radius: 0;
+  background: #cf1b1b;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+  clip-path: polygon(0 50%, 28% 0, 100% 0, 100% 100%, 28% 100%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 4px;
+  margin: 0;
+  margin-right: -1px;
+  flex-shrink: 0;
+}
 
-  const defaultSelected = useMemo(() => {
-    const first = items?.[0];
-    if (!first) {
-      return "";
-    }
-    return first.id;
-  }, [items]);
+.left-nav__collapse-toggle--collapsed {
+  clip-path: polygon(0 0, 72% 0, 100% 50%, 72% 100%, 0 100%);
+  padding-left: 0;
+  padding-right: 4px;
+}
 
-  const [selectedId, setSelectedId] = useState(defaultSelected);
-  const mainMenuIdsWithChildren = useMemo(
-    () => (items || []).filter((item) => Array.isArray(item.children) && item.children.length > 0).map((item) => item.id),
-    [items]
-  );
-  const [expandedMainMenuIds, setExpandedMainMenuIds] = useState(() => {
-    if (!enableMainMenuCollapse || expandMainMenusByDefault) {
-      return new Set(mainMenuIdsWithChildren);
-    }
-    return new Set();
-  });
+.left-nav__collapse-toggle:hover {
+  background: #b71616;
+}
 
-  useEffect(() => {
-    if (!items || items.length === 0) {
-      setSelectedId("");
-      return;
-    }
+.left-nav__collapse-toggle:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #cf1b1b;
+}
 
-    const hasSelected = allIds.includes(selectedId);
-    if (!hasSelected) {
-      setSelectedId(items[0].id);
-    }
-  }, [items, selectedId, allIds]);
+.left-nav__collapse-toggle-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
 
-  useEffect(() => {
-    if (!enableMainMenuCollapse) {
-      setExpandedMainMenuIds(new Set(mainMenuIdsWithChildren));
-      return;
-    }
+.left-nav__tooltip {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--nav-bg);
+  color: var(--nav-text);
+  border: 1px solid var(--nav-border);
+  border-radius: 0;
+  padding: 8px 12px;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  font-weight: 400;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  margin-left: 8px;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
 
-    setExpandedMainMenuIds((prev) => {
-      const next = new Set([...prev].filter((id) => mainMenuIdsWithChildren.includes(id)));
-      if (expandMainMenusByDefault && next.size === 0) {
-        return new Set(mainMenuIdsWithChildren);
-      }
-      return next;
-    });
-  }, [enableMainMenuCollapse, expandMainMenusByDefault, mainMenuIdsWithChildren]);
+.left-nav__tooltip::before {
+  content: "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 7px 8px 7px 0;
+  border-color: transparent var(--nav-border) transparent transparent;
+  margin-right: -1px;
+}
 
-  const handleSelect = (item, options = {}) => {
-    setSelectedId(item.id);
+.left-nav__tooltip::after {
+  content: "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 6px 7px 6px 0;
+  border-color: transparent var(--nav-bg) transparent transparent;
+  margin-right: 1px;
+}
 
-    if (options.canToggleMainMenu) {
-      setExpandedMainMenuIds((prev) => {
-        const next = new Set(prev);
-        if (next.has(item.id)) {
-          next.delete(item.id);
-        } else {
-          next.add(item.id);
-        }
-        return next;
-      });
-    }
+.left-nav__collapse-toggle-wrapper:hover .left-nav__tooltip {
+  opacity: 1;
+  visibility: visible;
+}
 
-    if (isMobileView) {
-      setMobileOpen(false);
-    }
-    if (onChange) {
-      onChange(item);
-    }
-  };
+.left-nav__body {
+  overflow: auto;
+  padding: 10px 6px;
+  border-radius: 0 0 var(--nav-radius) var(--nav-radius);
+}
 
-  const navClassName = [
-    "left-nav",
-    collapsed ? "left-nav--collapsed" : "",
-    className,
-    enableMobileOverlay && isMobileView ? "left-nav--overlay" : "",
-    enableMobileOverlay && isMobileView && mobileOpen ? "left-nav--overlay-open" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
+.left-nav__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
 
-  const collapseTooltipText = collapsed ? "Open sidebar" : "Close sidebar";
+.left-nav__item {
+  margin: 3px 0;
+}
 
-  return (
-    <>
-      {enableMobileOverlay && isMobileView && (
-        <button
-          type="button"
-          className="left-nav__mobile-toggle"
-          onClick={() => setMobileOpen((prev) => !prev)}
-          aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
-          aria-expanded={mobileOpen}
-          aria-controls="left-nav-overlay-panel"
-        >
-          {mobileOpen ? "X" : "|||"}
-        </button>
-      )}
+.left-nav__list > .left-nav__item + .left-nav__item {
+  border-top: 1px solid #ebebeb;
+  padding-top: 3px;
+}
 
-      {enableMobileOverlay && isMobileView && mobileOpen && (
-        <button
-          type="button"
-          className="left-nav__overlay-backdrop"
-          onClick={() => setMobileOpen(false)}
-          aria-label="Close navigation overlay"
-        />
-      )}
+.left-nav__button {
+  width: 100%;
+  height: 38px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--nav-text);
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
 
-      <aside className={navClassName} id={enableMobileOverlay && isMobileView ? "left-nav-overlay-panel" : undefined}>
-        <div className="left-nav__header">
-          {!collapsed && <span className="left-nav__title">Menu</span>}
-          <div className="left-nav__collapse-toggle-wrapper">
-            <button
-              type="button"
-              className={`left-nav__collapse-toggle ${collapsed ? "left-nav__collapse-toggle--collapsed" : ""}`}
-              onClick={() => setCollapsed((prev) => !prev)}
-              aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
-            >
-              {collapsed ? ">" : "<"}
-            </button>
-            {enableCollapseTooltip && (
-              <div className="left-nav__tooltip" role="tooltip">
-                {collapseTooltipText}
-              </div>
-            )}
-          </div>
-        </div>
+.left-nav__button:hover {
+  background: var(--nav-hover);
+}
 
-        <nav aria-label={ariaLabel} className="left-nav__body">
-          <ul className="left-nav__list">
-            {(items || []).map((item) => (
-              <LeftNavItem
-                key={item.id}
-                item={item}
-                level={0}
-                collapsed={collapsed}
-                selectedId={selectedId}
-                onSelect={handleSelect}
-                enableMainMenuCollapse={enableMainMenuCollapse}
-                expandedMainMenuIds={expandedMainMenuIds}
-                selectedItemBgColor={selectedItemBgColor}
-                selectedItemTextColor={selectedItemTextColor}
-                enableSelectedItemCustomStyling={enableSelectedItemCustomStyling}
-              />
-            ))}
-          </ul>
-        </nav>
-      </aside>
-    </>
-  );
+.left-nav__button--selected {
+  background: var(--nav-hover);
+}
+
+.left-nav__button--selected .left-nav__text {
+  color: var(--nav-text-selected);
+  font-weight: 600;
+}
+
+.left-nav__icon {
+  width: 20px;
+  min-width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.left-nav__icon svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.left-nav__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.left-nav__group-indicator {
+  margin-left: auto;
+  min-width: 16px;
+  text-align: center;
+  font-weight: 700;
+  color: #6c7783;
+}
+
+.left-nav__mobile-toggle {
+  display: none;
+}
+
+.left-nav__overlay-backdrop {
+  display: none;
+}
+
+.left-nav--collapsed .left-nav__button {
+  justify-content: center;
+  padding-left: 0 !important;
+}
+
+.left-nav--overlay {
+  position: fixed;
+  left: 0;
+  top: 0;
+  transform: translateX(-105%);
+  transition: transform 0.25s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+.left-nav--overlay.left-nav--overlay-open {
+  transform: translateX(0);
+}
+
+.left-nav__overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 8;
+}
+
+.left-nav__mobile-toggle {
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--nav-border);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--nav-text);
+  cursor: pointer;
+  z-index: 12;
+  font-weight: 700;
+}
+
+.left-nav__mobile-toggle:hover {
+  background: var(--nav-hover);
+}
+
+@media (max-width: 900px) {
+  .left-nav {
+    width: 220px;
+    min-width: 220px;
+  }
+
+  .left-nav--collapsed {
+    width: 60px;
+    min-width: 60px;
+  }
+
+  .left-nav--overlay {
+    width: min(82vw, 280px);
+    min-width: min(82vw, 280px);
+  }
+
+  .left-nav__mobile-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .left-nav__overlay-backdrop {
+    display: block;
+  }
 }
