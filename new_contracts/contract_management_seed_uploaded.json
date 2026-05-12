@@ -1,0 +1,226 @@
+[ {
+  "documentName" : "Contract-10.docx",
+  "documentLink" : "",
+  "clientIdentifier" : "",
+  "cdokType" : "",
+  "editedBy" : "",
+  "status" : "Draft",
+  "lawSections" : [ {
+    "name" : "Governing Law",
+    "columns" : [ ],
+    "rows" : [ {
+      "applicable" : "Yes",
+      "accuracy" : "",
+      "snippet" : "Swiss Law 10",
+      "page" : "1",
+      "country" : "Switzerland"
+    } ]
+  }, {
+    "name" : "Jurisdiction",
+    "columns" : [ ],
+    "rows" : [ {
+      "applicable" : "Yes",
+      "accuracy" : "",
+      "snippet" : "Zurich Court 10",
+      "page" : "1",
+      "risk" : "Low",
+      "reasoning" : "N/A"
+    } ]
+  }, {
+    "name" : "Change of Control",
+    "columns" : [ {
+      "key" : "risk",
+      "label" : "Risk"
+    }, {
+      "key" : "definition",
+      "label" : "Definition"
+    }, {
+      "key" : "reasoning",
+      "label" : "Reasoning"
+    } ],
+    "rows" : [ {
+      "applicable" : "Yes",
+      "accuracy" : "",
+      "snippet" : "Zurich Court 10",
+      "page" : "1",
+      "country" : "",
+      "risk" : "Low",
+      "definition" : "",
+      "reasoning" : "N/A"
+    } ]
+  }, {
+    "name" : "Material Adverse Change",
+    "columns" : [ {
+      "key" : "risk",
+      "label" : "Risk"
+    }, {
+      "key" : "definition",
+      "label" : "Definition"
+    }, {
+      "key" : "reasoning",
+      "label" : "Reasoning"
+    } ],
+    "rows" : [ {
+      "applicable" : "Yes",
+      "accuracy" : "",
+      "snippet" : "Zurich Court 10",
+      "page" : "1",
+      "country" : "",
+      "risk" : "Low",
+      "definition" : "",
+      "reasoning" : "N/A"
+    } ]
+  }, {
+    "name" : "Default",
+    "columns" : [ {
+      "key" : "risk",
+      "label" : "Risk"
+    }, {
+      "key" : "definition",
+      "label" : "Definition"
+    }, {
+      "key" : "reasoning",
+      "label" : "Reasoning"
+    } ],
+    "rows" : [ {
+      "applicable" : "Yes",
+      "accuracy" : "",
+      "snippet" : "Zurich Court 10",
+      "page" : "1",
+      "country" : "",
+      "risk" : "Low",
+      "definition" : "",
+      "reasoning" : "N/A"
+    } ]
+  }, {
+    "name" : "Termination Exists",
+    "columns" : [ {
+      "key" : "risk",
+      "label" : "Risk"
+    }, {
+      "key" : "reasoning",
+      "label" : "Reasoning"
+    } ],
+    "rows" : [ {
+      "applicable" : "Yes",
+      "accuracy" : "",
+      "snippet" : "Zurich Court 10",
+      "page" : "1",
+      "country" : "",
+      "risk" : "Low",
+      "reasoning" : "N/A"
+    } ]
+  }, {
+    "name" : "Termination",
+    "columns" : [ {
+      "key" : "risk",
+      "label" : "Risk"
+    }, {
+      "key" : "reasoning",
+      "label" : "Reasoning"
+    } ],
+    "rows" : [ {
+      "applicable" : "Yes",
+      "accuracy" : "",
+      "snippet" : "Zurich Court 10",
+      "page" : "1",
+      "country" : "",
+      "risk" : "Low",
+      "reasoning" : "N/A"
+    } ]
+  }, {
+    "name" : "Transfer Prohibitions",
+    "columns" : [ {
+      "key" : "risk1",
+      "label" : "Risk1"
+    }, {
+      "key" : "risk2",
+      "label" : "Risk2"
+    }, {
+      "key" : "reasoning",
+      "label" : "Reasoning"
+    } ],
+    "rows" : [ {
+      "applicable" : "Yes",
+      "accuracy" : "",
+      "snippet" : "Zurich Court 10",
+      "page" : "1",
+      "country" : "",
+      "risk1" : "",
+      "risk2" : "Low",
+      "reasoning" : "N/A"
+    } ]
+  }, {
+    "name" : "Transfer Procedures",
+    "columns" : [ {
+      "key" : "risk",
+      "label" : "Risk"
+    }, {
+      "key" : "reasoning",
+      "label" : "Reasoning"
+    } ],
+    "rows" : [ {
+      "applicable" : "Yes",
+      "accuracy" : "",
+      "snippet" : "Zurich Court 10",
+      "page" : "1",
+      "country" : "",
+      "risk" : "Low",
+      "reasoning" : "N/A"
+    } ]
+  }, {
+    "name" : "Successors/Assigns",
+    "columns" : [ {
+      "key" : "risk",
+      "label" : "Risk"
+    }, {
+      "key" : "reasoning",
+      "label" : "Reasoning"
+    } ],
+    "rows" : [ {
+      "applicable" : "Yes",
+      "accuracy" : "",
+      "snippet" : "Zurich Court 10",
+      "page" : "1",
+      "country" : "",
+      "risk" : "Low",
+      "reasoning" : "N/A"
+    } ]
+  }, {
+    "name" : "Breach",
+    "columns" : [ {
+      "key" : "risk",
+      "label" : "Risk"
+    }, {
+      "key" : "reasoning",
+      "label" : "Reasoning"
+    } ],
+    "rows" : [ {
+      "applicable" : "Yes",
+      "accuracy" : "",
+      "snippet" : "Zurich Court 10",
+      "page" : "1",
+      "country" : "",
+      "risk" : "Low",
+      "reasoning" : "N/A"
+    } ]
+  }, {
+    "name" : "Data Protection/Secrecy",
+    "columns" : [ {
+      "key" : "risk",
+      "label" : "Risk"
+    }, {
+      "key" : "reasoning",
+      "label" : "Reasoning"
+    } ],
+    "rows" : [ {
+      "applicable" : "Yes",
+      "accuracy" : "",
+      "snippet" : "Zurich Court 10",
+      "page" : "1",
+      "country" : "",
+      "risk" : "Low",
+      "reasoning" : "N/A"
+    } ]
+  } ]
+} ]
