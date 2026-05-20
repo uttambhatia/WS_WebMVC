@@ -30,3 +30,9 @@
     maxSelectable: maxComparisonCount,
   }}
 />
+
+  const handleRefreshTable = useCallback(() => {
+    setReloadToken((prev) => prev + 1);
+  }, []);
+
+const [reloadToken, setReloadToken] = useState(0);
