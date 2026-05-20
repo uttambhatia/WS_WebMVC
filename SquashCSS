@@ -1,25 +1,32 @@
-const buildServerQuery = useCallback(({ page, pageSize, filters }) => ({
-  start: page - 1,
-  size: pageSize,
-  ...(filters?.caseId ? { id: filters.caseId } : {}),
-}), []);
-
-
-const caseTableService = useCallback(async (params) => {
-  const result = await listSnapshotsPaged(params);
-  const summaries = Array.isArray(result?.content) ? result.content : [];
-
-  const data = await Promise.all(
-    summaries.map(async (summary) => ({
-      caseId: summary.caseId,
-      completedUpTo: summary.completedUpTo,
-      status: await resolveStatus(summary),
-      creationDate: deriveCreationDate(summary.caseId),
-    }))
-  );
-
-  return {
-    data,
-    total: result?.totalElements ?? 0,
-  };
-}, [selectedCaseIds]);
+<DataTable
+  columns={columns}
+  serverSide
+  service={caseTableService}
+  buildServerQuery={buildServerQuery}
+  reloadToken={reloadToken}
+  pageSize={10}
+  pageSizeOptions={[5, 10, 25, 50]}
+  sortableColumns={["caseId", "creationDate"]}
+  searchableColumns={["caseId"]}
+  filterMode="manual"
+  manualFilterDelayMs={650}
+  paginationPlacement="top"
+  toolbarExtra={
+    <button
+      type="button"
+      className="cm__refresh-btn"
+      onClick={() => setReloadToken((token) => token + 1)}
+      title="Refresh list"
+    >
+      ↺ Refresh
+    </button>
+  }
+  selection={{
+    enabled: showComparisonCheckboxes,
+    rowKey: "caseId",
+    selectedRowIds: selectedCaseIds,
+    onSelectedRowIdsChange: handleSelectedCaseIdsChange,
+    isRowSelectable: (row) => row.status === "Completed",
+    maxSelectable: maxComparisonCount,
+  }}
+/>
