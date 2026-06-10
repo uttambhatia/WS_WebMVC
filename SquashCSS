@@ -84,6 +84,12 @@ export default function SaveToSquashPanel({
   onEnableTableEditingChange,
   showFolderModeSelector = false,
 }) {
+  const isModeSelectorVisible =
+    showFolderModeSelector === true ||
+    showFolderModeSelector === "true" ||
+    showFolderModeSelector === 1 ||
+    showFolderModeSelector === "1";
+
   const configReady = Boolean(
     squashConfig?.getFolderService &&
       squashConfig?.createFolderService &&
@@ -96,12 +102,12 @@ export default function SaveToSquashPanel({
   const [mode, setMode] = useState("existing");
 
   useEffect(() => {
-    if (!showFolderModeSelector && mode !== "existing") {
+    if (!isModeSelectorVisible && mode !== "existing") {
       setMode("existing");
       setStatus(null);
       clearModeErrors();
     }
-  }, [showFolderModeSelector, mode]);
+  }, [isModeSelectorVisible, mode]);
 
   const panelOpen = typeof open === "boolean" ? open : openInternal;
   const setPanelOpen = (nextOpen) => {
@@ -407,38 +413,36 @@ export default function SaveToSquashPanel({
     <div className="fp__squash-wrap">
       {panelOpen && (
         <div className="fp__squash-panel" role="group" aria-label="Save to Squash panel">
-          <div
-            className="fp__squash-mode-row"
-            hidden={!showFolderModeSelector}
-            aria-hidden={!showFolderModeSelector}
-          >
-            <label className="fp__squash-radio">
-              <input
-                type="radio"
-                name="squash-save-mode"
-                checked={mode === "existing"}
-                onChange={() => {
-                  setMode("existing");
-                  setStatus(null);
-                }}
-                disabled={showModeBusy}
-              />
-              <span>Existing folder</span>
-            </label>
-            <label className="fp__squash-radio">
-              <input
-                type="radio"
-                name="squash-save-mode"
-                checked={mode === "new"}
-                onChange={() => {
-                  setMode("new");
-                  setStatus(null);
-                }}
-                disabled={showModeBusy}
-              />
-              <span>New folder</span>
-            </label>
-          </div>
+          {isModeSelectorVisible && (
+            <div className="fp__squash-mode-row">
+              <label className="fp__squash-radio">
+                <input
+                  type="radio"
+                  name="squash-save-mode"
+                  checked={mode === "existing"}
+                  onChange={() => {
+                    setMode("existing");
+                    setStatus(null);
+                  }}
+                  disabled={showModeBusy}
+                />
+                <span>Existing folder</span>
+              </label>
+              <label className="fp__squash-radio">
+                <input
+                  type="radio"
+                  name="squash-save-mode"
+                  checked={mode === "new"}
+                  onChange={() => {
+                    setMode("new");
+                    setStatus(null);
+                  }}
+                  disabled={showModeBusy}
+                />
+                <span>New folder</span>
+              </label>
+            </div>
+          )}
 
           {mode === "existing" ? (
             <div className="fp__squash-fields fp__squash-fields--existing">
