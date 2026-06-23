@@ -1,501 +1,1231 @@
-﻿/**
- * StageFlowPanelDemo.jsx
- *
- * Demonstrates StageFlowPanel wired with five real-world stages:
- *   1. Case ID Creation
- *   2. Upload Requirement Document
- *   3. Validation
- *   4. Approval
- *   5. Test Generation
- *
- * Each form component:
- *   - Uses forwardRef + useImperativeHandle to expose { validate(), submit() }
- *   - Receives serviceData / stageStatus / errorMessage / onSubmitStart/Success/Error
- */
-
-import { forwardRef, useCallback, useRef } from "react";
-import StageFlowPanel from "./StageFlowPanel";
-import CaseIdFormPanel from "../forms/CaseIdFormPanel/CaseIdFormPanel";
-import UploadDocFormPanel from "../forms/UploadDocFormPanel/UploadDocFormPanel";
-import ValidationFormPanel from "../forms/ValidationFormPanel/ValidationFormPanel";
-import ApprovalFormPanel from "../forms/ApprovalFormPanel/ApprovalFormPanel";
-import TestGenFormPanel from "../forms/TestGenFormPanel/TestGenFormPanel";
+import { memo, useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import DataTable from "../DataTable/DataTable";
+import InlineFullscreenPanel from "../shared/InlineFullscreenPanel";
+import MultiSelectDropdown from "../shared/MultiSelectDropdown";
 import {
-  createCaseId,
-  fetchCaseIdList,
-  getTaskId,
-  uploadDocument,
-  uploadGitlabIssue,
-  completeTask,
-  fetchTaskVariables,
-  approveOrReject,
-  fetchTestCases,
-  exportTestCases,
-  saveStageSnapshot
-} from "../../services/testManagementService";
+  downloadExecutionReport,
+  executeTests,
+  fetchExecutions,
+  fetchTestScripts,
+  getTestExecutionStatus,
+  saveExecution,
+} from "../../services/testExecutionService";
+import "./TestExecutionPage.css";
 
-/* ------------------------------------------------------------------ */
-/*  Stage SVG Icons                                                    */
-/* ------------------------------------------------------------------ */
-function CaseIdIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="M8 5V3m8 2V3" />
-      <path d="M7 10h5m-5 4h10" />
-    </svg>
-  );
-}
-
-function UploadDocIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="12" y1="18" x2="12" y2="12" />
-      <polyline points="9 15 12 12 15 15" />
-    </svg>
-  );
-}
-
-function ValidationIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.34C17.25 22.15 21 17.25 21 12V7z" />
-      <polyline points="9 12 11 14 15 10" />
-    </svg>
-  );
-}
-
-function ApprovalIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 9V5a3 3 0 0 0-6 0v4H5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h14
-               a1 1 0 0 0 1-1V10a1 1 0 0 0-1-1h-3z" />
-      <polyline points="9 13 11 15 15 11" />
-    </svg>
-  );
-}
-
-function TestGenIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-      <line x1="12" y1="2" x2="12" y2="22" />
-    </svg>
-  );
-}
-
-/* ================================================================== */
-/*  BPMN Process Task IDs — update these to match your process def   */
-/* ================================================================== */
-const PROCESS_TASK = {
-  UPLOAD_DOC:  "ProcessTask_UploadDoc",   // TODO: replace with actual BPMN task id
-  VALIDATION:  "ProcessTask_Validation",  // TODO: replace with actual BPMN task id
-  TEST_GEN:    "ProcessTask_TestGen",     // TODO: replace with actual BPMN task id
+const LIVE_STATUSES = new Set(["pending", "running"]);
+const FINAL_STATUSES = new Set(["completed", "failed", "error"]);
+const EXECUTION_STATS_COLORS = {
+  passed: "#2f8f43",
+  failed: "#b53746",
+  skipped: "#d7a445",
+  errors: "#5e6f82",
 };
 
-/* ================================================================== */
-/*  Response mappers — normalise raw API shapes to UI contracts       */
-/*  Keep all backend-to-UI field mapping here, never in form panels.  */
-/* ================================================================== */
+function FolderIcon({ open = false }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      {open ? (
+        <>
+          <path d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H18a2 2 0 0 1 2 2v2" />
+        </>
+      ) : (
+        <>
+          <path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Z" />
+        </>
+      )}
+    </svg>
+  );
+}
 
-/**
- * Stage 3 — Validation
- * Maps raw fetchTaskVariables response → ValidationFormPanel contract.
- *
- * UI contract shape:
- *   taskId              {string|null}
- *   document            {string|null}   uploaded document name / filename
- *   quality_percentage  {string|null}
- *   rating              {string|null}
- *   rating_explanation  {string|null}
- *   action_items        {Array<{ requirementId, missingFields[], recommendation[] }>}
- *   user_story_criteria {Array<{ criterion, criterionMeets, explanation, recommendation }>}
- *   summary_report      {Array<{ requirementId, mandatoryFieldItems }>}
- *
- * Source JSON path (validation.json / getVariables response):
- *   agentResponse.questions[0].reason.payload.task.result
- *     .details[0]  → per-document data
- *     .summary_report.details[]  → summary rows
- */
-function mapValidationData(raw, taskId) {
-  // Traverse nested response to the result node
-  const result   = raw?.agentResponse?.questions?.[0]?.reason?.payload?.task?.result ?? {};
-  const detail   = Array.isArray(result.details) ? result.details[0] : {};
-  const req      = detail?.requirement ?? {};
-  const qRating  = req?.quality_rating ?? {};
-  const summaryDetails = Array.isArray(result.summary_report?.details)
-    ? result.summary_report.details
-    : [];
+function FileIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+      <path d="M10 13h6" />
+      <path d="M10 17h6" />
+    </svg>
+  );
+}
 
-  // action_items — from requirements[]: requirement_id, missing_fields[], hitl_actions[]
-  const action_items = Array.isArray(req.requirements)
-    ? req.requirements.map((r) => ({
-        requirementId: r.requirement_id  ?? null,
-        missingFields: Array.isArray(r.missing_fields) ? r.missing_fields : [],
-        recommendation: Array.isArray(r.hitl_actions)  ? r.hitl_actions  : [],
-      }))
-    : [];
+function normalizeStatus(status) {
+  return String(status || "unknown").toLowerCase();
+}
 
-  // user_story_criteria — from user_story_validation[]: criterion, meets, explanation, hitl_action
-  const user_story_criteria = Array.isArray(req.user_story_validation)
-    ? req.user_story_validation.map((u) => ({
-        criterion:      u.criterion   ?? null,
-        criterionMeets: u.meets       ?? null,
-        explanation:    u.explanation ?? null,
-        recommendation: u.hitl_action ?? null,
-      }))
-    : [];
+function statusClass(status) {
+  const normalized = normalizeStatus(status);
+  if (normalized === "completed") return "te__status te__status--completed";
+  if (normalized === "failed") return "te__status te__status--failed";
+  if (normalized === "error") return "te__status te__status--error";
+  if (normalized === "running") return "te__status te__status--running";
+  if (normalized === "pending") return "te__status te__status--pending";
+  return "te__status te__status--unknown";
+}
 
-  // summary_report — from summary_report.details[]: requirement_id, mandatory_fields_status
-  const summary_report = summaryDetails.map((s) => ({
-    requirementId:       s.requirement_id          ?? null,
-    mandatoryFieldItems: s.mandatory_fields_status ?? null,
-  }));
+function formatStatus(status) {
+  const normalized = normalizeStatus(status);
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+function parseDate(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatDateTime(value) {
+  const date = parseDate(value);
+  if (!date) return "-";
+  return date.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+function computeDurationSeconds(startedAt, finishedAt, fallbackSeconds) {
+  if (typeof fallbackSeconds === "number" && Number.isFinite(fallbackSeconds)) {
+    return Math.max(0, fallbackSeconds);
+  }
+
+  const startDate = parseDate(startedAt);
+  const endDate = parseDate(finishedAt);
+  if (!startDate || !endDate) return null;
+
+  const diff = (endDate.getTime() - startDate.getTime()) / 1000;
+  return diff >= 0 ? diff : null;
+}
+
+function formatDuration(seconds) {
+  if (seconds == null) return "-";
+  const total = Math.floor(seconds);
+  const hrs = Math.floor(total / 3600);
+  const mins = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+  if (hrs > 0) return `${hrs}h ${mins}m ${secs}s`;
+  if (mins > 0) return `${mins}m ${secs}s`;
+  return `${secs}s`;
+}
+
+function normalizeSelectedScripts(raw) {
+  if (Array.isArray(raw) && raw.length > 0) {
+    return raw.filter(Boolean).map(String);
+  }
+  if (typeof raw === "string" && raw.trim()) {
+    return [raw.trim()];
+  }
+  return [];
+}
+
+function safeNumber(value) {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) && numberValue >= 0 ? numberValue : 0;
+}
+
+function parseReportString(reportText) {
+  if (typeof reportText !== "string" || !reportText.trim()) {
+    return null;
+  }
+
+  const trimmed = reportText.trim();
+  const asJsonLike = trimmed.replace(/([{,]\s*)([A-Za-z_][\w-]*)(\s*:)/g, '$1"$2"$3');
+  const candidates = [trimmed, asJsonLike];
+
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate);
+      if (parsed && typeof parsed === "object") {
+        return parsed;
+      }
+    } catch {
+      // Ignore malformed report payload and continue with next candidate.
+    }
+  }
+
+  return null;
+}
+
+function normalizeExecutionReport(rawReport) {
+  if (rawReport == null) {
+    return null;
+  }
+
+  let source = rawReport;
+  if (typeof rawReport === "string") {
+    source = parseReportString(rawReport);
+  }
+
+  if (!source || typeof source !== "object") {
+    return null;
+  }
 
   return {
-    taskId,
-    document:           detail?.filename                   ?? null,
-    quality_percentage: qRating?.quality_rating            ?? null,
-    rating:             qRating?.quality_comment           ?? null,
-    rating_explanation: qRating?.quality_rating_explanation ?? null,
-    action_items,
-    user_story_criteria,
-    summary_report,
+    passed: safeNumber(source.passed),
+    failed: safeNumber(source.failed),
+    skipped: safeNumber(source.skipped),
+    errors: safeNumber(source.errors),
   };
 }
 
-/**
- * Stage 5 — Test Generation
- * Maps raw fetchTestCases (testgeneration.json) response → TestGenFormPanel contract.
- *
- * Source JSON path:
- *   testGenerationResult.details[0].test_cases[]
- *     .testCaseId, .requirementId, .testDescription
- *     .preConditions[]          → preconditions[]
- *     .testSteps[].action       → testStepAction[]
- *
- * UI contract shape:
- *   taskId     {string|null}
- *   testcases  {Array<{ testCaseId, requirementId, testDescription,
- *                       preconditions, testStepAction }>}
- */
-function mapTestGenData(raw, taskId) {
-  const details = raw?.testGenerationResult?.details ?? [];
-  const allCases = details.flatMap((d) =>
-    Array.isArray(d.test_cases) ? d.test_cases : []
+function buildExecutionStats(report) {
+  const normalized = normalizeExecutionReport(report);
+  return [
+    { key: "passed", label: "Passed", value: normalized?.passed ?? 0, color: EXECUTION_STATS_COLORS.passed },
+    { key: "failed", label: "Failed", value: normalized?.failed ?? 0, color: EXECUTION_STATS_COLORS.failed },
+    { key: "skipped", label: "Skipped", value: normalized?.skipped ?? 0, color: EXECUTION_STATS_COLORS.skipped },
+    { key: "errors", label: "Errors", value: normalized?.errors ?? 0, color: EXECUTION_STATS_COLORS.errors },
+  ];
+}
+
+function normalizeExecution(row) {
+  const selectedScripts = normalizeSelectedScripts(
+    row?.script_paths || row?.selectedScripts || row?.scripts || row?.selected_tests || row?.script_path
   );
 
-  const testcases = allCases.map((tc) => ({
-    testCaseId:      tc.testCaseId      ?? null,
-    requirementId:   tc.requirementId   ?? null,
-    testDescription: tc.testDescription ?? null,
-    preconditions:   Array.isArray(tc.preConditions)
-      ? tc.preConditions
-      : [],
-    testStepAction:  Array.isArray(tc.testSteps)
-      ? tc.testSteps.map((s) => s.action ?? "").filter(Boolean)
-      : [],
-  }));
+  const startedAt = row?.started_at || row?.startedAt || null;
+  const finishedAt = row?.finished_at || row?.finishedAt || null;
+  const createdAt = row?.created_at || row?.createdAt || null;
 
-  return { taskId, testcases };
+  return {
+    testId: row?.test_id || row?.testId || "-",
+    status: normalizeStatus(row?.status),
+    createdAt,
+    startedAt,
+    finishedAt,
+    durationSeconds: computeDurationSeconds(startedAt, finishedAt, row?.duration_seconds ?? row?.durationSeconds),
+    reportPath: row?.report_path || row?.reportPath || "",
+    stdout: row?.stdout ?? null,
+    stderr: row?.stderr ?? null,
+    returnCode: row?.return_code ?? row?.returnCode ?? null,
+    report: normalizeExecutionReport(row?.report),
+    selectedScripts,
+  };
 }
 
-/* ================================================================== */
-/*  Stage entry services — each fetches its own taskId from caseId   */
-/* ================================================================== */
-
-/**
- * Stage 2 — Upload Doc: fetch taskId for the upload BPMN task.
- */
-async function getTaskIdService({ "case-id": caseId }) {
-  const taskId = await getTaskId(caseId, PROCESS_TASK.UPLOAD_DOC);
-  return taskId;
+function extractRows(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.content)) return payload.content;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.items)) return payload.items;
+  return [];
 }
 
-/**
- * Stage 3 — Validation: fetch variables then map to UI contract.
- */
-async function fetchVariablesService({ "case-id": caseId }) {
-  const taskId = await getTaskId(caseId, PROCESS_TASK.VALIDATION);
-  const raw    = await fetchTaskVariables(taskId);
-  return mapValidationData(raw, taskId);
+function extractTotal(payload, fallbackLength) {
+  if (typeof payload?.total === "number") return payload.total;
+  if (typeof payload?.totalElements === "number") return payload.totalElements;
+  if (typeof payload?.count === "number") return payload.count;
+  return fallbackLength;
 }
 
-/**
- * Stage 5 — Test Generation: fetch test cases then map to UI contract.
- */
-async function fetchTestCasesService({ "case-id": caseId }) {
-  const taskId = await getTaskId(caseId, PROCESS_TASK.TEST_GEN);
-  const raw    = await fetchTestCases(taskId);
-  return mapTestGenData(raw, taskId);
-}
+const TreeNode = memo(function TreeNode({ node, level, isExpanded, getIsExpanded, onToggleExpand, selectedSet, onToggleSelect, disabled }) {
+  const isDirectory = node.type === "directory";
 
-/* ================================================================== */
-/*  forwardRef wrappers â€” bind init-time props to form panels         */
-/* ================================================================== */
-
-const CaseIdStageForm = forwardRef(function CaseIdStageForm(props, ref) {
-  return (
-    <CaseIdFormPanel
-      ref={ref}
-      {...props}
-      title="Case ID Creation"
-      fetchService={fetchCaseIdList}
-      createService={createCaseId}
-    />
-  );
-});
-
-const UploadDocStageForm = forwardRef(function UploadDocStageForm(props, ref) {
-  return (
-    <UploadDocFormPanel
-      ref={ref}
-      {...props}
-      title="Upload Requirement Document"
-      gitlabService={uploadGitlabIssue}
-      documentService={uploadDocument}
-      completeService={completeTask}
-    />
-  );
-});
-
-const ValidationStageForm = forwardRef(function ValidationStageForm(props, ref) {
-  return (
-    <ValidationFormPanel
-      ref={ref}
-      {...props}
-      title="Validation"
-    />
-  );
-});
-
-const ApprovalStageForm = forwardRef(function ApprovalStageForm(props, ref) {
-  return (
-    <ApprovalFormPanel
-      ref={ref}
-      {...props}
-      title="Approval"
-      approveService={(taskId) => approveOrReject(taskId, "approve")}
-      rejectService={(taskId) => approveOrReject(taskId, "reject")}
-      maxLength={500}
-    />
-  );
-});
-
-const TestGenStageForm = forwardRef(function TestGenStageForm(props, ref) {
-  return (
-    <TestGenFormPanel
-      ref={ref}
-      {...props}
-      title="Test Case Generation"
-      exportService={(taskId) => exportTestCases(taskId)}
-    />
-  );
-});
-
-/* ================================================================== */
-/*  Stage definitions â€” real form panels wired with real services     */
-/* ================================================================== */
-const STAGES = [
-  {
-    id:                 "case-id",
-    name:               "Case ID",
-    icon:               <CaseIdIcon />,
-    component:          CaseIdStageForm,
-    showReloadOnFailure: true,
-  },
-  {
-    id:                 "upload-doc",
-    name:               "Upload Document",
-    icon:               <UploadDocIcon />,
-    service:            getTaskIdService,
-    component:          UploadDocStageForm,
-    showReloadOnFailure: true,
-  },
-  {
-    id:                 "validation",
-    name:               "Validation",
-    icon:               <ValidationIcon />,
-    service:            fetchVariablesService,
-    component:          ValidationStageForm,
-    showReloadOnFailure: true,
-  },
-  {
-    id:                 "approval",
-    name:               "Approval",
-    icon:               <ApprovalIcon />,
-    component:          ApprovalStageForm,
-    showReloadOnFailure: false,
-  },
-  {
-    id:                 "test-gen",
-    name:               "Test Generation",
-    icon:               <TestGenIcon />,
-    service:            fetchTestCasesService,
-    autoSubmit:         true,
-    component:          TestGenStageForm,
-    showReloadOnFailure: true,
-  },
-];
-
-/* ================================================================== */
-/* ------------------------------------------------------------------ */
-/*  Snapshot helpers                                                   */
-/* ------------------------------------------------------------------ */
-/**
- * When saving a rejected stage, embed _sfpStatus so the status can be
- * faithfully restored when the snapshot is loaded later.
- * For non-object serviceData (e.g. plain taskId string) or non-rejected
- * stages there is nothing to embed — we return the original data as-is.
- */
-function withStatus(serviceData, completedStatus) {
-  if (completedStatus === "rejected" && serviceData !== null && typeof serviceData === "object") {
-    return { ...serviceData, _sfpStatus: "rejected" };
-  }
-  return serviceData;
-}
-
-const SNAPSHOT_RETRY_DELAYS_MS = [300, 900, 1800];
-
-const wait = (ms) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-
-const hasSnapshotPayload = (value) => value !== null && value !== undefined;
-
-async function saveSnapshotWithRetry(caseId, stageId, data, completedUpTo) {
-  let attempt = 0;
-  while (attempt <= SNAPSHOT_RETRY_DELAYS_MS.length) {
-    try {
-      await saveStageSnapshot(caseId, stageId, data, completedUpTo);
-      return;
-    } catch (error) {
-      const status = error?.response?.status;
-      const isClientError = Number.isInteger(status) && status >= 400 && status < 500;
-      if (isClientError || attempt === SNAPSHOT_RETRY_DELAYS_MS.length) {
-        throw error;
-      }
-      await wait(SNAPSHOT_RETRY_DELAYS_MS[attempt]);
-      attempt += 1;
-    }
-  }
-}
-
-/**
- * Rebuild initialStageStates from a snapshot's stageData map.
- * Strips the internal _sfpStatus metadata key before setting serviceData,
- * and applies a backward-compatible fallback for older snapshots that never
- * stored _sfpStatus (checks decision === "reject" on approval data).
- */
-export function buildInitialStageStates(stageData) {
-  const initial = {};
-  for (const [stageId, rawData] of Object.entries(stageData ?? {})) {
-    const status =
-      rawData?._sfpStatus ??
-      (rawData?.decision === "reject" ? "rejected" : "success");
-    let data = rawData;
-    if (rawData && typeof rawData === "object" && "_sfpStatus" in rawData) {
-      const { _sfpStatus: _ignored, ...rest } = rawData;
-      data = rest;
-    }
-    initial[stageId] = { status, serviceData: data };
-  }
-  return initial;
-}
-
-/* ================================================================== */
-/*  StageFlowPanelDemo                                                 */
-/*  mode="create"  — start a brand-new workflow                        */
-/*  mode="view"    — read-only snapshot view                           */
-/*  mode="resume"  — resume an in-progress workflow                    */
-/* ================================================================== */
-export default function StageFlowPanelDemo({
-  mode                = "create",
-  initialCaseId       = null,
-  initialCompletedUpTo = -1,
-  initialStageStates  = null,
-  onSaved             = null,     // called after each successful snapshot save
-}) {
-  const activeCaseIdRef   = useRef(mode !== "create" ? initialCaseId : null);
-  const completedUpToRef  = useRef(mode !== "create" ? initialCompletedUpTo : -1);
-  const stageDataRef      = useRef({});
-
-  const handleStageComplete = useCallback(
-    (stageId, serviceData, stageIndex, completedStatus) => {
-      const caseId = activeCaseIdRef.current;
-      if (!caseId) return;
-
-      const dataToSave = withStatus(serviceData, completedStatus);
-      const lastKnownData = stageDataRef.current[stageId];
-      const snapshotPayload = hasSnapshotPayload(dataToSave) ? dataToSave : lastKnownData;
-      if (!hasSnapshotPayload(snapshotPayload)) {
-        console.error(`Snapshot skipped: empty payload for stage ${stageId}.`);
+  const descendantFiles = useMemo(() => {
+    if (!isDirectory) return [node.path];
+    const files = [];
+    const walk = (current) => {
+      if (current.type === "file") {
+        files.push(current.path);
         return;
       }
+      current.children.forEach(walk);
+    };
+    walk(node);
+    return files;
+  }, [isDirectory, node]);
 
-      stageDataRef.current[stageId] = snapshotPayload;
-      if (stageIndex > completedUpToRef.current) completedUpToRef.current = stageIndex;
-
-      saveSnapshotWithRetry(caseId, stageId, snapshotPayload, completedUpToRef.current)
-        .then(() => onSaved?.())
-        .catch(console.error);
-    },
-    [onSaved]
+  const selectedCount = descendantFiles.reduce(
+    (count, path) => (selectedSet.has(path) ? count + 1 : count),
+    0
   );
 
-  /* Captures the caseId when stage 0 (case-id) finishes during creation */
-  const handleStageCompleteWithCaseId = useCallback(
-    (stageId, serviceData, stageIndex, completedStatus) => {
-      if (stageId === "case-id" && serviceData) {
-        activeCaseIdRef.current  = serviceData;
-        completedUpToRef.current = -1;
-        stageDataRef.current     = {};
-      }
-      handleStageComplete(stageId, serviceData, stageIndex, completedStatus);
-    },
-    [handleStageComplete]
-  );
+  const checked = selectedCount > 0;
+  const indeterminate = isDirectory && selectedCount > 0 && selectedCount < descendantFiles.length;
 
-  if (mode === "view") {
-    return (
-      <StageFlowPanel
-        key={`view-${initialCaseId}`}
-        stages={STAGES}
-        viewMode
-        initialStageStates={initialStageStates}
-      />
-    );
-  }
-
-  if (mode === "resume") {
-    return (
-      <StageFlowPanel
-        key={`resume-${initialCaseId}`}
-        stages={STAGES}
-        resumeMode
-        initialStageStates={initialStageStates}
-        onStageComplete={handleStageComplete}
-      />
-    );
-  }
-
-  // create mode (default)
   return (
-    <StageFlowPanel
-      key="active"
-      stages={STAGES}
-      showReloadOnFailure={false}
-      onStageComplete={handleStageCompleteWithCaseId}
-      lockCompletedStages={true}
-    />
+    <div className="te__tree-node">
+      <div className="te__tree-node-row" style={{ paddingLeft: `${10 + level * 16}px` }}>
+        {isDirectory ? (
+          <button
+            type="button"
+            className="te__tree-expand"
+            onClick={() => onToggleExpand(node.path)}
+            aria-label={isExpanded ? "Collapse folder" : "Expand folder"}
+          >
+            {isExpanded ? "▾" : "▸"}
+          </button>
+        ) : (
+          <span className="te__tree-expand-placeholder" />
+        )}
+
+        <label className={`te__tree-label ${disabled ? "is-disabled" : ""}`}>
+          <input
+            type="checkbox"
+            checked={checked}
+            ref={(element) => {
+              if (element) {
+                element.indeterminate = indeterminate;
+              }
+            }}
+            onChange={() => onToggleSelect(node, descendantFiles, checked)}
+            disabled={disabled}
+          />
+          <span className={`te__tree-icon ${checked ? "is-selected" : ""} ${isDirectory && isExpanded ? "is-open" : ""}`.trim()} aria-hidden="true">
+            {isDirectory ? <FolderIcon open={Boolean(isExpanded)} /> : <FileIcon />}
+          </span>
+          <span className="te__tree-text">{node.name}</span>
+        </label>
+      </div>
+
+      {isDirectory && isExpanded && node.children?.length > 0 && (
+        <div>
+          {node.children.map((child) => (
+            <TreeNode
+              key={child.path}
+              node={child}
+              level={level + 1}
+              isExpanded={getIsExpanded(child.path)}
+              getIsExpanded={getIsExpanded}
+              onToggleExpand={onToggleExpand}
+              selectedSet={selectedSet}
+              onToggleSelect={onToggleSelect}
+              disabled={disabled}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});
+
+function normalizeScriptNode(node, parentPath = "") {
+  const name = node?.name || "";
+  const type = node?.type === "directory" ? "directory" : "file";
+  const candidatePath = node?.relative_path || node?.path || (parentPath ? `${parentPath}/${name}` : name);
+  const path = String(candidatePath || "").replace(/^\/+/, "");
+
+  if (type === "file") {
+    return {
+      type,
+      name: name || path.split("/").pop() || "",
+      path,
+      children: [],
+    };
+  }
+
+  const children = Array.isArray(node?.children)
+    ? node.children.map((child) => normalizeScriptNode(child, path))
+    : [];
+
+  return {
+    type,
+    name: name || path.split("/").pop() || "",
+    path,
+    children,
+  };
+}
+
+function normalizeScriptTree(payload) {
+  if (Array.isArray(payload?.tree)) {
+    return payload.tree.map((node) => normalizeScriptNode(node));
+  }
+  if (Array.isArray(payload)) {
+    return payload.map((node) => normalizeScriptNode(node));
+  }
+  if (Array.isArray(payload?.data)) {
+    return payload.data.map((node) => normalizeScriptNode(node));
+  }
+  return [];
+}
+
+function collectFilePaths(nodes) {
+  const paths = [];
+  const walk = (node) => {
+    if (node.type === "file") {
+      paths.push(node.path);
+      return;
+    }
+    node.children.forEach(walk);
+  };
+  nodes.forEach(walk);
+  return paths;
+}
+
+function buildStatsConicGradient(stats) {
+  const total = stats.reduce((sum, item) => sum + item.value, 0);
+  if (total <= 0) {
+    return "conic-gradient(#d5dde8 0deg, #d5dde8 360deg)";
+  }
+
+  let offset = 0;
+  const segments = stats.map((item) => {
+    const start = (offset / total) * 360;
+    offset += item.value;
+    const end = (offset / total) * 360;
+    return `${item.color} ${start}deg ${end}deg`;
+  });
+
+  return `conic-gradient(${segments.join(", ")})`;
+}
+
+function TestExecutionPanel({
+  mode,
+  selectedScripts,
+  treeNodes,
+  loadingTree,
+  treeError,
+  onRetryTree,
+  onRun,
+  running,
+  execution,
+  runError,
+}) {
+  const [expandedSet, setExpandedSet] = useState(new Set());
+  const [selectedSet, setSelectedSet] = useState(() => new Set(selectedScripts || []));
+  const [selectedStreams, setSelectedStreams] = useState([]);
+  const [selectedRegions, setSelectedRegions] = useState([]);
+  const [showMode, setShowMode] = useState("all");
+  const [treeSearchText, setTreeSearchText] = useState("");
+  const [resultsExpanded, setResultsExpanded] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const [showStatsChart, setShowStatsChart] = useState(false);
+
+  useEffect(() => {
+    setSelectedSet(new Set(selectedScripts || []));
+  }, [selectedScripts]);
+
+  useEffect(() => {
+    const dirs = new Set();
+    const walk = (node) => {
+      if (node.type === "directory") {
+        dirs.add(node.path);
+        node.children.forEach(walk);
+      }
+    };
+    treeNodes.forEach(walk);
+    setExpandedSet(dirs);
+  }, [treeNodes]);
+
+  const isReadOnly = mode === "view";
+
+  const allFilePaths = useMemo(() => collectFilePaths(treeNodes), [treeNodes]);
+
+  const streamOptions = useMemo(() => {
+    const values = new Set();
+    allFilePaths.forEach((path) => {
+      const parts = path.split("/").filter(Boolean);
+      if (parts[1]) {
+        values.add(parts[1]);
+      }
+    });
+    return Array.from(values).sort((a, b) => a.localeCompare(b));
+  }, [allFilePaths]);
+
+  const regionOptions = useMemo(() => {
+    const values = new Set();
+    allFilePaths.forEach((path) => {
+      const parts = path.split("/").filter(Boolean);
+      // Region is the 3rd hierarchy segment; require at least one deeper segment so we don't pick filenames.
+      if (parts.length >= 4 && parts[2]) {
+        values.add(parts[2]);
+      }
+    });
+    return Array.from(values).sort((a, b) => a.localeCompare(b));
+  }, [allFilePaths]);
+
+  useEffect(() => {
+    setSelectedStreams((prev) => prev.filter((item) => streamOptions.includes(item)));
+  }, [streamOptions]);
+
+  useEffect(() => {
+    setSelectedRegions((prev) => prev.filter((item) => regionOptions.includes(item)));
+  }, [regionOptions]);
+
+  const normalizedSearch = treeSearchText.trim().toLowerCase();
+
+  const filteredTreeNodes = useMemo(() => {
+    const hasStreamFilter = selectedStreams.length > 0;
+    const hasRegionFilter = selectedRegions.length > 0;
+    const hasSearch = normalizedSearch.length > 0;
+    const selectedOnly = showMode === "selected";
+
+    if (!hasStreamFilter && !hasRegionFilter && !hasSearch && !selectedOnly) {
+      return treeNodes;
+    }
+
+    const matchesPath = (path) => {
+      const parts = path.split("/").filter(Boolean);
+      const stream = parts[1] || "";
+      const region = parts[2] || "";
+      if (selectedOnly && !selectedSet.has(path)) {
+        return false;
+      }
+      if (hasStreamFilter && !selectedStreams.includes(stream)) {
+        return false;
+      }
+      if (hasRegionFilter && !selectedRegions.includes(region)) {
+        return false;
+      }
+      if (hasSearch && !path.toLowerCase().includes(normalizedSearch)) {
+        return false;
+      }
+      return true;
+    };
+
+    const filterNode = (node) => {
+      if (node.type === "file") {
+        return matchesPath(node.path) ? node : null;
+      }
+
+      const children = node.children
+        .map((child) => filterNode(child))
+        .filter(Boolean);
+
+      if (children.length > 0) {
+        return { ...node, children };
+      }
+
+      return null;
+    };
+
+    return treeNodes
+      .map((node) => filterNode(node))
+      .filter(Boolean);
+  }, [treeNodes, normalizedSearch, selectedStreams, selectedRegions, showMode, selectedSet]);
+
+  const allFilteredDirPaths = useMemo(() => {
+    const dirs = [];
+    const walk = (node) => {
+      if (node.type === "directory") {
+        dirs.push(node.path);
+        node.children?.forEach(walk);
+      }
+    };
+    filteredTreeNodes.forEach(walk);
+    return dirs;
+  }, [filteredTreeNodes]);
+
+  const isAllExpanded = allFilteredDirPaths.length > 0 && allFilteredDirPaths.every((p) => expandedSet.has(p));
+
+  const getIsExpanded = useCallback((path) => expandedSet.has(path), [expandedSet]);
+
+  const [isPending, startTransition] = useTransition();
+
+  const onToggleExpand = useCallback((path) => {
+    setExpandedSet((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) next.delete(path);
+      else next.add(path);
+      return next;
+    });
+  }, []);
+
+  const onToggleSelect = useCallback((node, descendantFiles, currentlyChecked) => {
+    if (isReadOnly) return;
+    setSelectedSet((prev) => {
+      const next = new Set(prev);
+      if (currentlyChecked) {
+        descendantFiles.forEach((path) => next.delete(path));
+      } else {
+        descendantFiles.forEach((path) => next.add(path));
+      }
+      return next;
+    });
+  }, [isReadOnly]);
+
+  const resultText = useMemo(() => {
+    const stdout = execution?.stdout;
+    if (stdout == null) return "No execution output yet.";
+    if (typeof stdout === "string") return stdout;
+    try {
+      return JSON.stringify(stdout, null, 2);
+    } catch {
+      return String(stdout);
+    }
+  }, [execution?.stdout]);
+
+  const status = normalizeStatus(execution?.status);
+  const elapsed = execution?.elapsedSeconds ?? null;
+  const canRun = mode === "new" || mode === "rerun";
+  const hasSelectedScripts = selectedSet.size > 0;
+  const showRunInDonut =
+    canRun &&
+    !running &&
+    (status === "idle" || status === "unknown" || FINAL_STATUSES.has(status));
+  const runButtonLabel = FINAL_STATUSES.has(status) ? "ReRun" : "Run";
+  const isFinalStatus = FINAL_STATUSES.has(status);
+  const executionStats = useMemo(() => buildExecutionStats(execution?.report), [execution?.report]);
+  const statsTotal = executionStats.reduce((sum, item) => sum + item.value, 0);
+  const statsConicGradient = useMemo(
+    () => buildStatsConicGradient(executionStats),
+    [executionStats]
+  );
+
+  useEffect(() => {
+    if (!isFinalStatus && showStatsChart) {
+      setShowStatsChart(false);
+    }
+  }, [isFinalStatus, showStatsChart]);
+
+  const donutClass = useMemo(() => {
+    if (status === "completed") return "te__donut te__donut--completed";
+    if (status === "failed") return "te__donut te__donut--failed";
+    if (status === "error") return "te__donut te__donut--error";
+    if (status === "running") return "te__donut te__donut--running";
+    if (status === "pending") return "te__donut te__donut--pending";
+    return "te__donut te__donut--idle";
+  }, [status]);
+
+  const copyResults = async () => {
+    try {
+      await navigator.clipboard.writeText(resultText);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1400);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <div className="te__panel">
+      <div className="te__panel-grid">
+        <section className="te__tree-card">
+          <div className="te__card-head">
+            <h3>Select Test Scripts</h3>
+            <span>{selectedSet.size} selected</span>
+          </div>
+
+          {loadingTree && <div className="te__tree-message">Loading scripts...</div>}
+          {!loadingTree && treeError && (
+            <div className="te__tree-message te__tree-message--error">
+              <p>{treeError}</p>
+              <button type="button" className="te__btn te__btn--ghost" onClick={onRetryTree}>Retry</button>
+            </div>
+          )}
+          {!loadingTree && !treeError && treeNodes.length === 0 && (
+            <div className="te__tree-message">No scripts available.</div>
+          )}
+
+          {!loadingTree && !treeError && treeNodes.length > 0 && (
+            <>
+              <div className="te__tree-filters" role="group" aria-label="Tree filters">
+                <div className="te__tree-filter-group">
+                  <MultiSelectDropdown
+                    label="Stream"
+                    placeholder="All Streams"
+                    options={streamOptions}
+                    selected={selectedStreams}
+                    onChange={setSelectedStreams}
+                    className="te__tree-filter"
+                  />
+                  {selectedStreams.length > 0 && (
+                    <div className="te__tree-filter-badges" aria-label="Selected stream filters">
+                      {selectedStreams.map((stream) => (
+                        <button
+                          key={stream}
+                          type="button"
+                          className="te__tree-filter-badge"
+                          onClick={() => setSelectedStreams((prev) => prev.filter((item) => item !== stream))}
+                          aria-label={`Remove stream filter ${stream}`}
+                        >
+                          <span>{stream}</span>
+                          <span className="te__tree-filter-badge-remove" aria-hidden="true">x</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="te__tree-filter-group">
+                  <MultiSelectDropdown
+                    label="Region"
+                    placeholder="All Regions"
+                    options={regionOptions}
+                    selected={selectedRegions}
+                    onChange={setSelectedRegions}
+                    className="te__tree-filter"
+                  />
+                  {selectedRegions.length > 0 && (
+                    <div className="te__tree-filter-badges" aria-label="Selected region filters">
+                      {selectedRegions.map((region) => (
+                        <button
+                          key={region}
+                          type="button"
+                          className="te__tree-filter-badge"
+                          onClick={() => setSelectedRegions((prev) => prev.filter((item) => item !== region))}
+                          aria-label={`Remove region filter ${region}`}
+                        >
+                          <span>{region}</span>
+                          <span className="te__tree-filter-badge-remove" aria-hidden="true">x</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <label className="te__tree-search">
+                  <span>Search</span>
+                  <input
+                    type="text"
+                    value={treeSearchText}
+                    onChange={(event) => setTreeSearchText(event.target.value)}
+                    placeholder="Filter by file path"
+                  />
+                </label>
+              </div>
+
+              <div className={`te__tree${isPending ? " is-pending" : ""}`} role="tree" aria-label="Test script hierarchy">
+                <div className="te__tree-show" role="group" aria-label="Tree visibility mode">
+                  <button
+                    type="button"
+                    className="te__tree-expand-toggle"
+                    disabled={allFilteredDirPaths.length === 0}
+                    aria-label={isAllExpanded ? "Collapse all" : "Expand all"}
+                    onClick={() =>
+                      startTransition(() =>
+                        setExpandedSet(isAllExpanded ? new Set() : new Set(allFilteredDirPaths))
+                      )
+                    }
+                  >
+                    <span className="te__tree-expand-toggle-text">{isAllExpanded ? "Collapse" : "Expand"}</span>
+                    <span className="te__tree-expand-toggle-icon" aria-hidden="true">{isAllExpanded ? "\u2212" : "+"}</span>
+                  </button>
+                  <div className="te__tree-show-right">
+                    <span className="te__tree-show-label">Show</span>
+                    <button
+                      type="button"
+                      className={`te__tree-show-toggle ${showMode === "selected" ? "is-selected" : "is-all"}`.trim()}
+                      onClick={() => startTransition(() => setShowMode((prev) => (prev === "all" ? "selected" : "all")))}
+                      aria-label={showMode === "all" ? "Show selected only" : "Show all scripts"}
+                      aria-pressed={showMode === "selected"}
+                    >
+                      <span className="te__tree-show-option">All</span>
+                      <span className="te__tree-show-option">Selected</span>
+                    </button>
+                  </div>
+                </div>
+                {filteredTreeNodes.length === 0 ? (
+                  <div className="te__tree-message">No scripts match selected filters.</div>
+                ) : (
+                  filteredTreeNodes.map((node) => (
+                    <TreeNode
+                      key={node.path}
+                      node={node}
+                      level={0}
+                      isExpanded={expandedSet.has(node.path)}
+                      getIsExpanded={getIsExpanded}
+                      onToggleExpand={onToggleExpand}
+                      selectedSet={selectedSet}
+                      onToggleSelect={onToggleSelect}
+                      disabled={isReadOnly}
+                    />
+                  ))
+                )}
+              </div>
+            </>
+          )}
+        </section>
+
+        <section className="te__runtime-card">
+          <div className="te__card-head">
+            <h3>Execute Tests</h3>
+            <span>Status: {execution?.status ? formatStatus(execution.status) : "Idle"}</span>
+          </div>
+
+          <div className="te__runtime-body">
+            <div className="te__runtime-top">
+              <div className={donutClass}>
+                <div className="te__donut-center">
+                  {showRunInDonut ? (
+                    <button
+                      type="button"
+                      className={`te__run-btn-in-donut ${hasSelectedScripts ? "" : "te__run-btn-in-donut--idle"}`.trim()}
+                      onClick={() => onRun(Array.from(selectedSet))}
+                      disabled={!hasSelectedScripts}
+                      aria-label={runButtonLabel === "ReRun" ? "Rerun test execution" : "Run test execution"}
+                    >
+                      {runButtonLabel}
+                    </button>
+                  ) : (
+                    <>
+                      <span className="te__donut-status">{execution?.status ? formatStatus(execution.status) : "Idle"}</span>
+                      <span className="te__donut-time">{elapsed == null ? "00s" : formatDuration(elapsed)}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {runError && <div className="te__error">{runError}</div>}
+
+            <div className="te__meta">
+              <div><strong>Test Id:</strong> {execution?.testId || "-"}</div>
+              <div>
+                <strong>Time Taken:</strong>{" "}
+                {formatDuration(execution?.durationSeconds ?? elapsed)}
+              </div>
+            </div>
+
+            <div className="te__results">
+              <button
+                type="button"
+                className="te__results-toggle"
+                onClick={() => setResultsExpanded((prev) => !prev)}
+              >
+                <span>Test Execution Results</span>
+                <span>{resultsExpanded ? "▾" : "▸"}</span>
+              </button>
+
+              {resultsExpanded && (
+                <div className="te__results-body">
+                  <div className="te__results-toolbar">
+                    <div className="te__results-toolbar-left">
+                      {isFinalStatus && (
+                        <button
+                          type="button"
+                          className="te__btn te__btn--secondary"
+                          onClick={() => setShowStatsChart((prev) => !prev)}
+                        >
+                          {showStatsChart ? "Hide Stats" : "Stats"}
+                        </button>
+                      )}
+                    </div>
+                    <button type="button" className="te__btn te__btn--ghost" onClick={copyResults}>
+                      {copied ? "Copied" : "Copy"}
+                    </button>
+                  </div>
+
+                  {isFinalStatus && showStatsChart && (
+                    <div className="te__stats-panel" role="region" aria-label="Execution stats overview">
+                      <div className="te__stats-chart" style={{ background: statsConicGradient }} aria-hidden="true">
+                        <div className="te__stats-chart-core">
+                          <strong>{statsTotal}</strong>
+                          <span>Checks</span>
+                        </div>
+                      </div>
+
+                      <div className="te__stats-legend">
+                        {executionStats.map((item) => (
+                          <div key={item.key} className="te__stats-legend-item">
+                            <span className="te__stats-dot" style={{ background: item.color }} aria-hidden="true" />
+                            <span>{item.label}</span>
+                            <strong>{item.value}</strong>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <pre>{resultText}</pre>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+export default function TestExecutionPage() {
+  const [reloadToken, setReloadToken] = useState(0);
+  const [panelMode, setPanelMode] = useState("");
+  const [panelExecution, setPanelExecution] = useState(null);
+  const [panelRunError, setPanelRunError] = useState("");
+  const [running, setRunning] = useState(false);
+
+  const [treeNodes, setTreeNodes] = useState([]);
+  const [loadingTree, setLoadingTree] = useState(false);
+  const [treeError, setTreeError] = useState("");
+
+  const [liveExecutionIds, setLiveExecutionIds] = useState([]);
+
+  const panelOpen = Boolean(panelMode);
+
+  const loadTree = useCallback(async () => {
+    setLoadingTree(true);
+    setTreeError("");
+    try {
+      const data = await fetchTestScripts();
+      setTreeNodes(normalizeScriptTree(data));
+    } catch (error) {
+      setTreeError(error?.message || "Unable to fetch test scripts hierarchy.");
+      setTreeNodes([]);
+    } finally {
+      setLoadingTree(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (panelOpen) {
+      loadTree();
+    }
+  }, [panelOpen, loadTree]);
+
+  useEffect(() => {
+    if (!panelExecution?.testId) return undefined;
+    const status = normalizeStatus(panelExecution.status);
+    if (!LIVE_STATUSES.has(status)) return undefined;
+
+    const timer = window.setInterval(async () => {
+      try {
+        const latest = await getTestExecutionStatus(panelExecution.testId);
+        const normalized = normalizeExecution(latest);
+        setPanelExecution((prev) => ({
+          ...(prev || {}),
+          ...normalized,
+          selectedScripts: prev?.selectedScripts || normalized.selectedScripts || [],
+          elapsedSeconds: prev?.elapsedSeconds ?? 0,
+        }));
+
+        if (FINAL_STATUSES.has(normalized.status)) {
+          await saveExecution({
+            test_id: normalized.testId,
+            status: normalized.status,
+            script_path: normalized.selectedScripts?.[0] || null,
+            script_paths: normalized.selectedScripts || [],
+            created_at: normalized.createdAt,
+            started_at: normalized.startedAt,
+            finished_at: normalized.finishedAt,
+            stdout: normalized.stdout,
+            stderr: normalized.stderr,
+            report: normalized.report,
+            report_path: normalized.reportPath,
+            duration_seconds: normalized.durationSeconds,
+          });
+          setReloadToken((prev) => prev + 1);
+        }
+      } catch {
+        // Keep panel alive on transient status polling errors.
+      }
+    }, 10000);
+
+    return () => window.clearInterval(timer);
+  }, [panelExecution?.testId, panelExecution?.status]);
+
+  useEffect(() => {
+    if (!panelExecution?.testId) return undefined;
+    const status = normalizeStatus(panelExecution.status);
+    if (!LIVE_STATUSES.has(status)) return undefined;
+
+    const timer = window.setInterval(() => {
+      setPanelExecution((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          elapsedSeconds: (prev.elapsedSeconds || 0) + 1,
+        };
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [panelExecution?.testId, panelExecution?.status]);
+
+  useEffect(() => {
+    if (liveExecutionIds.length === 0) return undefined;
+
+    const timer = window.setInterval(async () => {
+      try {
+        await Promise.all(
+          liveExecutionIds.map(async (testId) => {
+            const latest = await getTestExecutionStatus(testId);
+            const normalized = normalizeExecution(latest);
+            if (FINAL_STATUSES.has(normalized.status)) {
+              await saveExecution({
+                test_id: normalized.testId,
+                status: normalized.status,
+                script_path: normalized.selectedScripts?.[0] || null,
+                script_paths: normalized.selectedScripts || [],
+                created_at: normalized.createdAt,
+                started_at: normalized.startedAt,
+                finished_at: normalized.finishedAt,
+                stdout: normalized.stdout,
+                stderr: normalized.stderr,
+                report: normalized.report,
+                report_path: normalized.reportPath,
+                duration_seconds: normalized.durationSeconds,
+              });
+            }
+          })
+        );
+        setReloadToken((prev) => prev + 1);
+      } catch {
+        // Keep table polling resilient to partial failures.
+      }
+    }, 10000);
+
+    return () => window.clearInterval(timer);
+  }, [liveExecutionIds]);
+
+  const openPanel = useCallback((mode, row = null) => {
+    setPanelMode(mode);
+    setPanelRunError("");
+    if (row) {
+      setPanelExecution({
+        ...row,
+        selectedScripts: row.selectedScripts || [],
+        elapsedSeconds: row.durationSeconds || 0,
+      });
+      return;
+    }
+    setPanelExecution({
+      testId: "",
+      status: "idle",
+      selectedScripts: [],
+      createdAt: null,
+      startedAt: null,
+      finishedAt: null,
+      elapsedSeconds: 0,
+      stdout: null,
+      report: null,
+      reportPath: "",
+    });
+  }, []);
+
+  const closePanel = useCallback(() => {
+    setPanelMode("");
+    setPanelExecution(null);
+    setPanelRunError("");
+    setRunning(false);
+  }, []);
+
+  const handleRun = useCallback(async (selectedScripts) => {
+    if (!selectedScripts.length) {
+      setPanelRunError("Select at least one test script before running execution.");
+      return;
+    }
+
+    setRunning(true);
+    setPanelRunError("");
+
+    try {
+      const response = await executeTests({
+        script_path: selectedScripts[0],
+        script_paths: selectedScripts,
+        pytest_args: [
+            "-k",
+            "test_nginx"
+        ],
+      });
+
+      const execution = normalizeExecution({
+        ...response,
+        script_paths: selectedScripts,
+      });
+
+      setPanelExecution((prev) => ({
+        ...(prev || {}),
+        ...execution,
+        selectedScripts,
+        elapsedSeconds: 0,
+      }));
+
+      await saveExecution({
+        test_id: execution.testId,
+        status: execution.status,
+        script_path: selectedScripts[0],
+        script_paths: selectedScripts,
+        created_at: execution.createdAt,
+        started_at: execution.startedAt,
+        finished_at: execution.finishedAt,
+        stdout: execution.stdout,
+        stderr: execution.stderr,
+        report: execution.report,
+        report_path: execution.reportPath,
+        duration_seconds: execution.durationSeconds,
+      });
+
+      setReloadToken((prev) => prev + 1);
+    } catch (error) {
+      setPanelRunError(error?.message || "Unable to execute selected tests.");
+    } finally {
+      setRunning(false);
+    }
+  }, []);
+
+  const columns = useMemo(
+    () => [
+      { key: "testId", label: "Test Id", sortable: true },
+      {
+        key: "status",
+        label: "Status",
+        sortable: true,
+        render: (value) => <span className={statusClass(value)}>{formatStatus(value)}</span>,
+      },
+      {
+        key: "createdAt",
+        label: "Created At",
+        sortable: true,
+        render: (value) => formatDateTime(value),
+      },
+      {
+        key: "startedAt",
+        label: "Started At",
+        sortable: true,
+        render: (value) => formatDateTime(value),
+      },
+      {
+        key: "finishedAt",
+        label: "Finished At",
+        sortable: true,
+        render: (value) => formatDateTime(value),
+      },
+      {
+        key: "durationSeconds",
+        label: "Run Duration",
+        sortable: true,
+        render: (value) => formatDuration(value),
+      },
+    ],
+    []
+  );
+
+  const buildServerQuery = useCallback(({ page, pageSize, sort, filters }) => ({
+    page: page - 1,
+    size: pageSize,
+    sortBy: sort?.[0]?.key || "created_at",
+    sortDirection: sort?.[0]?.dir || "desc",
+    filters,
+  }), []);
+
+  const executionTableService = useCallback(async (params) => {
+    const payload = await fetchExecutions(params);
+    const rows = extractRows(payload).map(normalizeExecution);
+    const total = extractTotal(payload, rows.length);
+
+    setLiveExecutionIds(
+      rows
+        .filter((row) => LIVE_STATUSES.has(normalizeStatus(row.status)))
+        .map((row) => row.testId)
+        .filter(Boolean)
+    );
+
+    return {
+      data: rows,
+      total,
+    };
+  }, []);
+
+  const renderRowActions = useCallback(
+    ({ row }) => (
+      <div className="te__actions">
+        <button
+          type="button"
+          className="te__btn te__btn--ghost"
+          onClick={() => openPanel("view", row)}
+        >
+          View
+        </button>
+        <button
+          type="button"
+          className="te__btn te__btn--secondary"
+          onClick={() => openPanel("rerun", row)}
+        >
+          ReRun
+        </button>
+        <button
+          type="button"
+          className="te__btn te__btn--primary"
+          onClick={async () => {
+            try {
+              await downloadExecutionReport(row.testId, row.reportPath || undefined);
+            } catch {
+              // Keep table interaction non-blocking.
+            }
+          }}
+        >
+          Report
+        </button>
+      </div>
+    ),
+    [openPanel]
+  );
+
+  const panelTitle =
+    panelMode === "new"
+      ? "New Test Execution"
+      : panelMode === "rerun"
+        ? "ReRun Test Execution"
+        : "View Test Execution";
+
+  const handleRefreshTable = useCallback(() => {
+    setReloadToken((prev) => prev + 1);
+  }, []);
+
+  return (
+    <div className={`te-page${panelOpen ? " te-page--panel-open" : ""}`}>
+      <div className="te-page__inline-panel-wrap">
+          <InlineFullscreenPanel
+            isOpen={panelOpen}
+            title={panelTitle}
+            onBack={closePanel}
+            backLabel="Back to Executions"
+            enableFullscreenToggle
+            transparent
+          >
+            <TestExecutionPanel
+              mode={panelMode || "view"}
+              selectedScripts={panelExecution?.selectedScripts || []}
+              treeNodes={treeNodes}
+              loadingTree={loadingTree}
+              treeError={treeError}
+              onRetryTree={loadTree}
+              onRun={handleRun}
+              running={running}
+              execution={panelExecution}
+              runError={panelRunError}
+            />
+          </InlineFullscreenPanel>
+        </div>
+
+        <div className="te-page__content">
+          <div className="te-page__title-row">
+            <div>
+              <h1>Test Execution Management</h1>
+              <p>Create and monitor test executions with live status polling and execution outputs.</p>
+            </div>
+            <button type="button" className="te__btn te__btn--primary te__new-exec-btn" onClick={() => openPanel("new")}>
+              <span className="te__new-exec-icon" aria-hidden="true">+</span>
+              <span>New Test Execution</span>
+            </button>
+          </div>
+
+          <section className="te-page__table-shell">
+            <div className="te-page__table-toolbar">
+              <button
+                type="button"
+                className="te__btn te__btn--secondary te__refresh-btn"
+                onClick={handleRefreshTable}
+                aria-label="Refresh execution table"
+              >
+                <span className="te__refresh-icon" aria-hidden="true">↻</span>
+                <span>Refresh</span>
+              </button>
+            </div>
+
+            <DataTable
+              columns={columns}
+              sortableColumns={[
+                "testId",
+                "status",
+                "createdAt",
+                "startedAt",
+                "finishedAt",
+                "durationSeconds",
+              ]}
+              searchableColumns={["testId", "status"]}
+              serverSide
+              pageSize={10}
+              pageSizeOptions={[10, 20, 50]}
+              service={executionTableService}
+              buildServerQuery={buildServerQuery}
+              reloadToken={reloadToken}
+              renderRowActions={renderRowActions}
+              rowActionsColumnWidth="22%"
+            />
+          </section>
+        </div>
+    </div>
   );
 }
