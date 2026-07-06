@@ -266,6 +266,20 @@ function normalizeExecutionResults(rawResults) {
   }));
 }
 
+function normalizeExecutionItems(executionItems) {
+  // Convert execution_items from backend to results table format
+  const items = Array.isArray(executionItems) ? executionItems : [];
+  
+  return items.map((item, index) => ({
+    id: item?.itemId || `row-${index}`,
+    status: normalizeStatus(item?.status),
+    testId: item?.execCaseId || item?.execCaseName || "-",
+    scriptName: item?.execScript || "-",
+    runDuration: computeDurationSeconds(null, null, item?.durationSeconds),
+    errorMessage: item?.error || "",
+  }));
+}
+
 function formatExecutionResultsPayload(report) {
   if (!report || typeof report !== "object") {
     return [];
@@ -534,7 +548,6 @@ function TestExecutionPanel({
   const [selectedRegions, setSelectedRegions] = useState([]);
   const [showMode, setShowMode] = useState("all");
   const [treeSearchText, setTreeSearchText] = useState("");
-  const [resultsExpanded, setResultsExpanded] = useState(true);
   const [resultsPanelExpanded, setResultsPanelExpanded] = useState(true);
   const [copied, setCopied] = useState(false);
   const [showStatsChart, setShowStatsChart] = useState(false);
@@ -570,12 +583,21 @@ function TestExecutionPanel({
   }, [selectedScripts]);
 
   useEffect(() => {
-    const nextResults = execution?.results?.length ? execution.results : formatExecutionResultsPayload(execution?.report);
+    // Prioritize execution_items from backend over report results
+    let nextResults = [];
+    if (execution?.executionItems?.length > 0) {
+      nextResults = normalizeExecutionItems(execution.executionItems);
+      console.log('[Results] Using execution_items:', nextResults);
+    } else {
+      nextResults = execution?.results?.length ? execution.results : formatExecutionResultsPayload(execution?.report);
+      console.log('[Results] Using report results or execution.results:', nextResults);
+    }
+    
     setExecutionResults(nextResults);
     if (nextResults.length > 0) {
       setResultsPanelExpanded(true);
     }
-  }, [execution?.report, execution?.results]);
+  }, [execution?.report, execution?.results, execution?.executionItems]);
 
   useEffect(() => {
     if (mode !== "rerun") {
@@ -890,7 +912,6 @@ function TestExecutionPanel({
     }
 
     setShowStatsChart(true);
-    setResultsExpanded(true);
     setResultsPanelExpanded(true);
   }, [isFinalStatus, execution?.testId]);
 
@@ -1213,7 +1234,7 @@ function TestExecutionPanel({
                 <button
                   type="button"
                   className="te__results-toggle"
-                  onClick={() => setResultsExpanded((prev) => !prev)}
+                  onClick={() => setResultsPanelExpanded((prev) => !prev)}
                 >
                   <span className="te__results-toggle-title">
                     <span className="te__results-toggle-icon" aria-hidden="true">
@@ -1224,10 +1245,10 @@ function TestExecutionPanel({
                     </span>
                     <span>Test Execution Results</span>
                   </span>
-                  <span>{resultsExpanded ? "▾" : "▸"}</span>
+                  <span>{resultsPanelExpanded ? "▾" : "▸"}</span>
                 </button>
 
-                {resultsExpanded && (
+                {resultsPanelExpanded && (
                   <div className="te__results-body">
                     <div className="te__results-toolbar">
                       <div className="te__results-toolbar-left">
@@ -1428,24 +1449,26 @@ function TestExecutionPanel({
               {scheduleMessage ? <div className="te__schedule-success">{scheduleMessage}</div> : null}
               {mode === "view" && scheduleDetails && <div className="te__schedule-readonly-notice">Viewing saved schedule details - Read only</div>}
 
-              <div className="te__schedule-actions">
-                <button
-                  type="button"
-                  className="te__btn te__btn--secondary"
-                  onClick={handleScheduleCancel}
-                  disabled={scheduleSaving || mode === "view"}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="te__btn te__btn--primary"
-                  onClick={handleScheduleSave}
-                  disabled={scheduleSaving || mode === "view"}
-                >
-                  {scheduleSaving ? "Saving..." : "Save"}
-                </button>
-              </div>
+              {mode !== "view" && (
+                <div className="te__schedule-actions">
+                  <button
+                    type="button"
+                    className="te__btn te__btn--secondary"
+                    onClick={handleScheduleCancel}
+                    disabled={scheduleSaving}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="te__btn te__btn--primary"
+                    onClick={handleScheduleSave}
+                    disabled={scheduleSaving}
+                  >
+                    {scheduleSaving ? "Saving..." : "Save"}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -1585,7 +1608,8 @@ export default function TestExecutionPage() {
         }));
 
         if (FINAL_STATUSES.has(normalized.status)) {
-          await saveExecution({
+          // Build save payload - use raw results from API, not normalized results
+          const savePayload = {
             test_id: normalized.testId,
             status: normalized.status,
             script_path: normalized.selectedScripts?.[0] || null,
@@ -1598,8 +1622,52 @@ export default function TestExecutionPage() {
             report: normalized.report,
             report_path: normalized.reportPath,
             duration_seconds: normalized.durationSeconds,
-            results: normalized.results || [],
-          });
+            results: latest?.results || [],  // Use raw results from API, not normalized
+          };
+          
+          console.log('[polling] Saving execution at final status:', savePayload);
+          const saveResponse = await saveExecution(savePayload);
+          const executionIdFromSave = saveResponse?.execution_id;
+          console.log('[polling] saveExecution returned execution_id:', executionIdFromSave);
+          
+          // Now fetch full execution details with the execution_id from save response
+          let fullDetails = null;
+          if (executionIdFromSave) {
+            try {
+              const { getExecutionDetails } = await import('../../services/testExecutionService.js');
+              fullDetails = await getExecutionDetails(executionIdFromSave);
+              console.log('[polling] Full execution details fetched, execution_items count:', fullDetails?.execution_items?.length);
+              
+              if (fullDetails?.execution_items?.length > 0) {
+                // Re-save with execution_items included
+                const savePayloadWithItems = {
+                  ...savePayload,
+                  execution_items: fullDetails.execution_items.map(item => ({
+                    itemId: item.itemId,
+                    test_execution_script: item.execScript,
+                    status: item.status,
+                    duration_seconds: item.durationSeconds,
+                    error_message: item.error,
+                  })),
+                };
+                console.log('[polling] Re-saving with execution_items:', savePayloadWithItems.execution_items);
+                await saveExecution(savePayloadWithItems);
+                
+                // Update panel execution with items
+                setPanelExecution((prev) => ({
+                  ...(prev || {}),
+                  ...normalized,
+                  executionId: executionIdFromSave,
+                  executionItems: fullDetails.execution_items,
+                  selectedScripts: prev?.selectedScripts || normalized.selectedScripts || [],
+                  elapsedSeconds: prev?.elapsedSeconds ?? 0,
+                }));
+              }
+            } catch (e) {
+              console.log('[polling] Could not fetch full execution details:', e);
+            }
+          }
+          
           setReloadToken((prev) => prev + 1);
         }
       } catch {
@@ -1792,7 +1860,7 @@ export default function TestExecutionPage() {
         elapsedSeconds: 0,
       }));
 
-      await saveExecution({
+      const savePayload = {
         test_id: execution.testId,
         status: execution.status,
         script_path: selectedScripts[0],
@@ -1806,7 +1874,21 @@ export default function TestExecutionPage() {
         report_path: execution.reportPath,
         duration_seconds: execution.durationSeconds,
         results: execution.results || [],
-      });
+      };
+      
+      // Include execution_items if available in response - convert field names for backend
+      if (execution.executionItems?.length > 0) {
+        savePayload.execution_items = execution.executionItems.map(item => ({
+          itemId: item.id,
+          test_execution_script: item.scriptName,
+          status: item.status,
+          duration_seconds: item.runDuration,
+          error_message: item.errorMessage,
+        }));
+        console.log('[handleRun] Including execution_items in saveExecution payload:', savePayload.execution_items);
+      }
+
+      await saveExecution(savePayload);
 
       setReloadToken((prev) => prev + 1);
     } catch (error) {
