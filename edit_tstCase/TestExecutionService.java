@@ -120,7 +120,14 @@ public class TestExecutionService {
                 if (request.getTotal()        != null) entity.setTotal(request.getTotal());
                 if (request.getRunType()      != null) entity.setRunType(request.getRunType());
 
-                return ExecutionEntityDtoMapper.toDto(testExecutionRepository.save(entity));
+                TestExecution saved = testExecutionRepository.save(entity);
+                
+                // Update execution_items if provided (important for re-saving with results)
+                if (request.getExecutionItems() != null && !request.getExecutionItems().isEmpty()) {
+                    saveExecutionItems(saved, request.getExecutionItems());
+                }
+                
+                return ExecutionEntityDtoMapper.toDto(saved);
             }
         }
 
@@ -274,21 +281,40 @@ public class TestExecutionService {
             return;
         }
 
+        // Fetch existing items for this execution to support upsert by script name
+        List<ExecutionItem> existingItems = execution.getExecutionId() != null 
+            ? executionItemRepository.findByExecutionExecutionIdOrderByScriptOrderAsc(execution.getExecutionId())
+            : new ArrayList<>();
+
         List<ExecutionItem> itemsToSave = new ArrayList<>();
+        
         for (ExecutionItemDto itemDto : executionItems) {
             if (itemDto == null) {
                 continue;
             }
 
-            ExecutionItem item = new ExecutionItem();
+            String script = trimToNull(itemDto.getExecScript());
+            
+            // Try to find existing item by execution + script (natural key)
+            ExecutionItem item = existingItems.stream()
+                    .filter(e -> script != null && script.equals(e.getExecScript()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (item == null) {
+                // Create new item if not found
+                item = new ExecutionItem();
+                item.setExecution(execution);
+            }
+            
+            // Update fields (works for both new and existing items)
             item.setExecCaseId(trimToNull(itemDto.getExecCaseId()));
             item.setExecCaseName(trimToNull(itemDto.getExecCaseName()));
-            item.setExecScript(trimToNull(itemDto.getExecScript()));
+            item.setExecScript(script);
             item.setScriptOrder(itemDto.getScriptOrder());
             item.setStatus(trimToNull(itemDto.getStatus()));
             item.setError(trimToNull(itemDto.getError()));
             item.setDurationSeconds(itemDto.getDurationSeconds());
-            item.setExecution(execution);
 
             if (itemDto.getScheduleId() != null) {
                 Schedule itemSchedule = scheduleRepository.findById(itemDto.getScheduleId())
