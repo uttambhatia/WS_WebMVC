@@ -1893,6 +1893,35 @@ export default function TestExecutionPage() {
       setReloadToken((prev) => prev + 1);
     } catch (error) {
       setPanelRunError(error?.message || "Unable to execute selected tests.");
+      
+      // Even if execute fails, save a record of the attempt with selected scripts
+      try {
+        console.log('[handleRun] Execute failed, saving error record with selected scripts');
+        const now = new Date().toISOString();
+        const errorPayload = {
+          test_id: `error-${Date.now()}`,
+          status: 'error',
+          created_at: now,
+          started_at: now,
+          finished_at: now,
+          script_path: selectedScripts[0] || null,
+          script_paths: selectedScripts,
+          error_message: error?.message || 'Execute endpoint failed',
+          duration_seconds: 0,
+          // Save selected scripts as execution_items so they're visible in history
+          execution_items: selectedScripts.map((script, idx) => ({
+            test_execution_script: script,
+            status: 'error',
+            error_message: 'Execution failed to start',
+            duration_seconds: 0,
+          })),
+        };
+        await saveExecution(errorPayload);
+        console.log('[handleRun] Error record saved');
+        setReloadToken((prev) => prev + 1);
+      } catch (saveError) {
+        console.error('[handleRun] Failed to save error record:', saveError);
+      }
     } finally {
       setRunning(false);
     }
