@@ -2114,21 +2114,57 @@ export default function TestExecutionPage() {
       <div className="te__actions">
         <button
           type="button"
-          className="te__btn te__btn--ghost"
+          className="te__btn te__btn--ghost te__view-action-btn"
           onClick={() => openPanel("view", row)}
         >
-          View
+          <span className="te__view-action-icon-wrap" aria-hidden="true">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="te__view-action-icon"
+            >
+              <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </span>
+          <span>View</span>
         </button>
         <button
           type="button"
-          className="te__btn te__btn--secondary"
+          className="te__btn te__btn--secondary te__rerun-btn"
           onClick={() => openPanel("rerun", row)}
         >
-          ReRun
+          <span className="te__rerun-icon-wrap" aria-hidden="true">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="te__rerun-icon"
+            >
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+              <path d="M21 3v5h-5"/>
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+              <path d="M8 16H3v5"/>
+            </svg>
+          </span>
+          <span>ReRun</span>
         </button>
         <button
           type="button"
-          className="te__btn te__btn--primary"
+          className="te__btn te__btn--primary te__report-btn"
           onClick={async () => {
             try {
               await downloadExecutionReport(row.testId, row.reportPath || undefined);
@@ -2137,7 +2173,27 @@ export default function TestExecutionPage() {
             }
           }}
         >
-          Report
+          <span className="te__report-icon-wrap" aria-hidden="true">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="te__report-icon"
+            >
+              <path d="M15 4H7"/>
+              <path d="m18 16 3 3-3 3"/>
+              <path d="M3 4v13a2 2 0 0 0 2 2h16"/>
+              <path d="M7 14h7"/>
+              <path d="M7 9h12"/>
+            </svg>
+          </span>
+          <span>Report</span>
         </button>
       </div>
     ),
@@ -2149,10 +2205,27 @@ export default function TestExecutionPage() {
       <div className="te__actions">
         <button
           type="button"
-          className="te__btn te__btn--ghost"
+          className="te__btn te__btn--ghost te__view-action-btn"
           onClick={() => openSchedulePanel("view", row)}
         >
-          View
+          <span className="te__view-action-icon-wrap" aria-hidden="true">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="te__view-action-icon"
+            >
+              <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </span>
+          <span>View</span>
         </button>
         <button
           type="button"
@@ -2174,21 +2247,55 @@ export default function TestExecutionPage() {
         </button>
         <button
           type="button"
-          className="te__btn te__btn--primary"
+          className="te__btn te__btn--primary te__edit-action-btn"
           onClick={() => openSchedulePanel("rerun", row)}
         >
-          Edit
+          <span className="te__edit-action-icon-wrap" aria-hidden="true">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="te__view-action-icon"
+            >
+              <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
+            </svg>
+          </span>
+          <span>Edit</span>
         </button>
         <button
           type="button"
-          className="te__btn te__btn--secondary"
+          className="te__btn te__btn--secondary te__run-history-btn"
           onClick={() => {
             setExecutionHistoryCount(null);
             setExecutionHistoryScheduleId(String(row.scheduleId));
             setActiveTab("executions");
           }}
         >
-          Run History
+          <span className="te__run-history-icon-wrap" aria-hidden="true">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="te__run-history-icon"
+            >
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+              <path d="M12 7v5l4 2"/>
+            </svg>
+          </span>
+          <span>Run History</span>
         </button>
       </div>
     ),
@@ -2329,7 +2436,30 @@ export default function TestExecutionPage() {
                       className={`te-page__tab ${activeTab === "schedule" ? "is-active" : ""}`.trim()}
                       onClick={() => setActiveTab("schedule")}
                     >
-                      <span className="te-page__tab-label">Schedule</span>
+                      <span className="te-page__tab-label">
+                        <span className="te-page__tab-icon-wrap" aria-hidden="true">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="te-page__tab-icon"
+                          >
+                            <path d="M16 14v2.2l1.6 1"/>
+                            <path d="M16 2v4"/>
+                            <path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/>
+                            <path d="M3 10h5"/>
+                            <path d="M8 2v4"/>
+                            <circle cx="16" cy="16" r="6"/>
+                          </svg>
+                        </span>
+                        <span>Schedule</span>
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -2338,7 +2468,36 @@ export default function TestExecutionPage() {
                       className={`te-page__tab ${activeTab === "executions" ? "is-active" : ""}`.trim()}
                       onClick={() => setActiveTab("executions")}
                     >
-                      <span className="te-page__tab-label">Executions</span>
+                      <span className="te-page__tab-label">
+                        <span className="te-page__tab-icon-wrap" aria-hidden="true">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="te-page__tab-icon"
+                          >
+                            <path d="M15 8a1 1 0 0 1-1-1V2a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8z"/>
+                            <path d="M20 8v12a2 2 0 0 1-2 2h-4.182"/>
+                            <path d="m3.305 19.53.923-.382"/>
+                            <path d="M4 10.592V4a2 2 0 0 1 2-2h8"/>
+                            <path d="m4.228 16.852-.924-.383"/>
+                            <path d="m5.852 15.228-.383-.923"/>
+                            <path d="m5.852 20.772-.383.924"/>
+                            <path d="m8.148 15.228.383-.923"/>
+                            <path d="m8.53 21.696-.382-.924"/>
+                            <path d="m9.773 16.852.922-.383"/>
+                            <path d="m9.773 19.148.922.383"/>
+                            <circle cx="7" cy="18" r="3"/>
+                          </svg>
+                        </span>
+                        <span>Executions</span>
+                      </span>
                     </button>
                   </div>
                 </div>
