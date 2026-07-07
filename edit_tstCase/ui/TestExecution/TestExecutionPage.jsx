@@ -1573,6 +1573,8 @@ function TestExecutionPanel({
 export default function TestExecutionPage() {
   const [reloadToken, setReloadToken] = useState(0);
   const [activeTab, setActiveTab] = useState("schedule");
+  const [executionHistoryScheduleId, setExecutionHistoryScheduleId] = useState("");
+  const [executionHistoryCount, setExecutionHistoryCount] = useState(null);
   const [panelMode, setPanelMode] = useState("");
   const [panelExecutionMode, setPanelExecutionMode] = useState("run");
   const [panelExecution, setPanelExecution] = useState(null);
@@ -2068,7 +2070,12 @@ export default function TestExecutionPage() {
   }), []);
 
   const executionTableService = useCallback(async (params) => {
-    const payload = await fetchExecutions(params);
+    const nextParams = { ...(params || {}) };
+    if (executionHistoryScheduleId) {
+      nextParams.scheduleId = String(executionHistoryScheduleId);
+    }
+
+    const payload = await fetchExecutions(nextParams);
     const rows = extractRows(payload).map(normalizeExecution);
     const total = extractTotal(payload, rows.length);
 
@@ -2079,11 +2086,17 @@ export default function TestExecutionPage() {
         .filter(Boolean)
     );
 
+    if (executionHistoryScheduleId) {
+      setExecutionHistoryCount(total);
+    } else {
+      setExecutionHistoryCount(null);
+    }
+
     return {
       data: rows,
       total,
     };
-  }, []);
+  }, [executionHistoryScheduleId]);
 
   const scheduleTableService = useCallback(async (params) => {
     const payload = await fetchSchedules(params);
@@ -2165,6 +2178,17 @@ export default function TestExecutionPage() {
           onClick={() => openSchedulePanel("rerun", row)}
         >
           Edit
+        </button>
+        <button
+          type="button"
+          className="te__btn te__btn--secondary"
+          onClick={() => {
+            setExecutionHistoryCount(null);
+            setExecutionHistoryScheduleId(String(row.scheduleId));
+            setActiveTab("executions");
+          }}
+        >
+          Run History
         </button>
       </div>
     ),
@@ -2323,6 +2347,41 @@ export default function TestExecutionPage() {
 
             <section className="te-page__table-shell te-page__table-shell--tabbed">
               <div className="te-page__table-toolbar">
+                {activeTab === "executions" && executionHistoryScheduleId ? (
+                  <button
+                    type="button"
+                    className="te__btn te__btn--ghost te__history-chip te__tooltip-target"
+                    onClick={() => {
+                      setExecutionHistoryScheduleId("");
+                      setExecutionHistoryCount(null);
+                    }}
+                    data-tooltip={`Schedule #${executionHistoryScheduleId} history`}
+                    aria-label={`Clear filter. Schedule #${executionHistoryScheduleId} history`}
+                  >
+                    {executionHistoryCount !== null ? (
+                      <span className="te__history-chip-icon-wrap" aria-label={`${executionHistoryCount} runs`}>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="te__history-chip-badge-icon"
+                          aria-hidden="true"
+                        >
+                          <path d="M12.531 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14v6a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341l.427-.473"/>
+                          <path d="m16.5 3.5 5 5"/>
+                          <path d="m21.5 3.5-5 5"/>
+                        </svg>
+                      </span>
+                    ) : null}
+                    <span>Clear Filter</span>
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   className="te__btn te__btn--secondary te__refresh-btn"
