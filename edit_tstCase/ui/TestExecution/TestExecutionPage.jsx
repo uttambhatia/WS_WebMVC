@@ -2293,8 +2293,8 @@ export default function TestExecutionPage() {
             </button>
           </div>
 
-          <section className="te-page__table-shell">
-            <div className="te-page__table-toolbar">
+          <div className="te-page__tabbed-table-group">
+            <div className="te-page__tabs-dock">
               <div className="te-page__tab-panel">
                 <div className="te-page__tab-panel-head">
                   <div className="te-page__tabs" role="tablist" aria-label="Test execution views">
@@ -2319,16 +2319,20 @@ export default function TestExecutionPage() {
                   </div>
                 </div>
               </div>
-              <button
-                type="button"
-                className="te__btn te__btn--secondary te__refresh-btn"
-                onClick={handleRefreshTable}
-                aria-label="Refresh execution table"
-              >
-                <span className="te__refresh-icon" aria-hidden="true">↻</span>
-                <span>Refresh</span>
-              </button>
             </div>
+
+            <section className="te-page__table-shell te-page__table-shell--tabbed">
+              <div className="te-page__table-toolbar">
+                <button
+                  type="button"
+                  className="te__btn te__btn--secondary te__refresh-btn"
+                  onClick={handleRefreshTable}
+                  aria-label="Refresh execution table"
+                >
+                  <span className="te__refresh-icon" aria-hidden="true">↻</span>
+                  <span>Refresh</span>
+                </button>
+              </div>
 
             {activeTab === "schedule" ? (
               <DataTable
@@ -2371,7 +2375,8 @@ export default function TestExecutionPage() {
                 rowActionsColumnWidth="22%"
               />
             )}
-          </section>
+            </section>
+          </div>
         </div>
     </div>
   );
