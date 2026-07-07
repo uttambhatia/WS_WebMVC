@@ -207,31 +207,111 @@ public class TestExecutionMemoryController {
     @SuppressWarnings("unchecked")
     private List<ExecutionItemDto> extractExecutionItems(Map<String, Object> payload) {
         Object directItems = payload.get("execution_items");
+        if (directItems == null) {
+            directItems = payload.get("executionItems");
+        }
         Object results = payload.get("results");
         Object source = directItems != null ? directItems : results;
-        if (!(source instanceof List<?> items)) {
+        if (source instanceof List<?> items) {
+            List<ExecutionItemDto> executionItems = new ArrayList<>();
+            int index = 0;
+            for (Object entry : items) {
+                if (!(entry instanceof Map<?, ?> itemMap)) {
+                    index++;
+                    continue;
+                }
+
+                Map<String, Object> item = (Map<String, Object>) itemMap;
+                ExecutionItemDto dto = new ExecutionItemDto();
+                dto.setItemId(asLong(firstNonNull(item, "itemId", "item_id")));
+                dto.setExecCaseId(asString(firstNonNull(item, "test_case_id", "testCaseId", "execCaseId")));
+                dto.setExecCaseName(asString(firstNonNull(item, "test_case_name", "testCaseName", "execCaseName")));
+                dto.setExecScript(asString(firstNonNull(item,
+                        "test_execution_script",
+                        "execScript",
+                        "scriptName",
+                        "script_path",
+                        "scriptPath")));
+                dto.setScriptOrder(asInteger(firstNonNull(item, "script_order", "scriptOrder", index + 1)));
+                dto.setStatus(asString(firstNonNull(item, "status")));
+                dto.setError(asString(firstNonNull(item, "error_message", "errorMessage", "error")));
+                dto.setDurationSeconds(asInteger(firstNonNull(item, "duration_seconds", "durationSeconds", "runDuration")));
+                dto.setScheduleId(asLong(firstNonNull(item, "schedule_id", "scheduleId")));
+
+                if (dto.getExecScript() != null && !dto.getExecScript().isBlank()) {
+                    executionItems.add(dto);
+                }
+                index++;
+            }
+
+            if (!executionItems.isEmpty()) {
+                return executionItems;
+            }
+        }
+
+        // Fallback for UI payloads that only send selected scripts.
+        List<ExecutionItemDto> fromScripts = fromScriptPaths(payload);
+        if (!fromScripts.isEmpty()) {
+            return fromScripts;
+        }
+
+        String singleScript = asString(firstNonNull(payload, "script_path", "scriptPath"));
+        if (singleScript == null || singleScript.isBlank()) {
+            return List.of();
+        }
+
+        ExecutionItemDto dto = new ExecutionItemDto();
+        dto.setExecScript(singleScript);
+        dto.setScriptOrder(1);
+        dto.setStatus(defaultString(asString(payload.get("status")), "PENDING"));
+        dto.setError(asString(firstNonNull(payload, "error_message", "errorMessage")));
+        dto.setDurationSeconds(asInteger(firstNonNull(payload, "duration_seconds", "durationSeconds")));
+        return List.of(dto);
+    }
+
+    private List<ExecutionItemDto> fromScriptPaths(Map<String, Object> payload) {
+        Object scriptPaths = firstNonNull(payload, "script_paths", "scriptPaths");
+        if (!(scriptPaths instanceof List<?> scripts) || scripts.isEmpty()) {
             return List.of();
         }
 
         List<ExecutionItemDto> executionItems = new ArrayList<>();
-        for (Object entry : items) {
-            if (!(entry instanceof Map<?, ?> itemMap)) {
+        int index = 0;
+        for (Object scriptEntry : scripts) {
+            String script = asString(scriptEntry);
+            if (script == null || script.isBlank()) {
+                index++;
                 continue;
             }
 
-            Map<String, Object> item = (Map<String, Object>) itemMap;
             ExecutionItemDto dto = new ExecutionItemDto();
-            dto.setExecCaseId(asString(item.get("test_case_id")));
-            dto.setExecCaseName(asString(item.get("test_case_name")));
-            dto.setExecScript(asString(item.get("test_execution_script")));
-            dto.setScriptOrder(asInteger(item.get("script_order")));
-            dto.setStatus(asString(item.get("status")));
-            dto.setError(asString(item.get("error_message")));
-            dto.setDurationSeconds(asInteger(item.get("duration_seconds")));
-            dto.setScheduleId(asLong(item.get("schedule_id")));
+            dto.setExecScript(script);
+            dto.setScriptOrder(index + 1);
+            dto.setStatus(defaultString(asString(payload.get("status")), "PENDING"));
+            dto.setError(asString(firstNonNull(payload, "error_message", "errorMessage")));
+            dto.setDurationSeconds(asInteger(firstNonNull(payload, "duration_seconds", "durationSeconds")));
+            dto.setScheduleId(asLong(firstNonNull(payload, "schedule_id", "scheduleId")));
             executionItems.add(dto);
+            index++;
         }
 
         return executionItems;
+    }
+
+    private Object firstNonNull(Map<String, Object> source, Object... keys) {
+        if (source == null || keys == null) {
+            return null;
+        }
+        for (Object key : keys) {
+            if (key instanceof String name && source.containsKey(name)) {
+                Object value = source.get(name);
+                if (value != null) {
+                    return value;
+                }
+            } else if (!(key instanceof String)) {
+                return key;
+            }
+        }
+        return null;
     }
 }
