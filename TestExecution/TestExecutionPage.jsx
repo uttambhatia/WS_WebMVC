@@ -706,17 +706,7 @@ function TestExecutionPanel({
   const [scheduleError, setScheduleError] = useState("");
   const [scheduleMessage, setScheduleMessage] = useState("");
   const [scheduleSaving, setScheduleSaving] = useState(false);
-  const statsPanelRef = useRef(null);
   const resultsDockRef = useRef(null);
-
-  const scrollResultsDockIntoView = useCallback(() => {
-    // Wait for React state updates + layout to settle before scrolling.
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
-        resultsDockRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    });
-  }, []);
 
   useEffect(() => {
     setSelectedSet(new Set(selectedScripts || []));
@@ -839,10 +829,6 @@ function TestExecutionPanel({
     setResultsPanelMaximized(false);
     setResultsPanelExpanded(resultsPanelBeforeMaximize);
   }, [resultsPanelBeforeMaximize]);
-
-  useEffect(() => {
-    scrollResultsDockIntoView();
-  }, [resultsPanelExpanded, resultsPanelMaximized, scrollResultsDockIntoView]);
 
   useEffect(() => {
     const dirs = new Set();
@@ -1060,31 +1046,6 @@ function TestExecutionPanel({
     setShowStatsChart(true);
     setResultsPanelExpanded(true);
   }, [isFinalStatus, execution?.testId]);
-
-  useEffect(() => {
-    if (!showStatsChart || !isFinalStatus) {
-      return;
-    }
-
-    // Delay to ensure the stats panel has mounted before requesting scroll.
-    const timer = window.setTimeout(() => {
-      statsPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }, 0);
-
-    return () => window.clearTimeout(timer);
-  }, [showStatsChart, isFinalStatus]);
-
-  useEffect(() => {
-    if (!resultsPanelExpanded || !showStatsChart || !isFinalStatus) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      statsPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }, 0);
-
-    return () => window.clearTimeout(timer);
-  }, [resultsPanelExpanded, showStatsChart, isFinalStatus]);
 
   const donutClass = useMemo(() => {
     if (status === "completed") return "te__donut te__donut--completed";
@@ -1454,7 +1415,7 @@ function TestExecutionPanel({
                     </div>
 
                     {isFinalStatus && showStatsChart && (
-                      <div className="te__stats-panel" role="region" aria-label="Execution stats overview" ref={statsPanelRef}>
+                      <div className="te__stats-panel" role="region" aria-label="Execution stats overview">
                         <div className="te__stats-chart" style={{ background: statsConicGradient }} aria-hidden="true">
                           <div className="te__stats-chart-core">
                             <strong>{statsTotal}</strong>
