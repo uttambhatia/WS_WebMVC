@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState, useTransition 
 import DataTable from "../DataTable/DataTable";
 import InlineFullscreenPanel from "../shared/InlineFullscreenPanel";
 import MultiSelectDropdown from "../shared/MultiSelectDropdown";
+import DateTimeCalendar from "../shared/DateTimeCalendar";
 import {
   downloadExecutionReport,
   executeTests,
@@ -1135,7 +1136,7 @@ function TestExecutionPanel({
     const payload = {
       run_type: "SCHEDULED",
       script_paths: Array.from(selectedSet),
-      run_at: formatScheduleDateTime(scheduleRunAt),
+      run_at: scheduleRunAt,
       run_at_iso: localInputToUtcIso(scheduleRunAt, selectedTimezone?.timezoneCode),
       recurring: scheduleRecurring,
       timezone: {
@@ -1482,19 +1483,16 @@ function TestExecutionPanel({
             <div className="te__schedule-form">
               <div className="te__schedule-field">
                 <label className="te__schedule-label">Run at</label>
-                <input
-                  type="datetime-local"
-                  step="1"
+                <DateTimeCalendar
                   value={scheduleRunAt}
-                  onChange={(event) => {
-                    setScheduleRunAt(event.target.value);
+                  onChange={(nextValue) => {
+                    setScheduleRunAt(nextValue);
                     setScheduleError("");
                     setScheduleMessage("");
                   }}
                   disabled={mode === "view"}
-                  className="te__schedule-input"
                 />
-                <span className="te__schedule-hint">Format: dd-mm-yyyy hh:mm:ss</span>
+                <span className="te__schedule-hint">Pick the schedule date and time from the UBS calendar.</span>
               </div>
 
               <div className="te__schedule-field te__schedule-field--autocomplete">
