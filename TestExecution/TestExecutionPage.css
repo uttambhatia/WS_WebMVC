@@ -816,6 +816,7 @@
 .te__panel--results-maximized .te__panel-grid {
   grid-template-columns: 1fr;
   flex: 1 1 auto;
+  position: relative;
 }
 
 .te__panel--results-maximized .te__tree-card,
@@ -824,11 +825,18 @@
 }
 
 .te__panel--results-maximized .te__results-dock {
-  flex: 1 1 auto;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  margin: 0;
+  width: auto;
+  height: auto;
   min-height: 0;
+  background: #ffffff;
 }
 
 .te__panel--results-maximized .te__results-panel {
+  flex: 1 1 auto;
   height: 100%;
   max-height: none;
   min-height: 0;
