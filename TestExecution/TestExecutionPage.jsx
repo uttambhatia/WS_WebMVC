@@ -1628,7 +1628,10 @@ function TestExecutionPanel({
             </div>
 
             {resultsPanelExpanded && (
-              <div className="te__results-panel te__results-panel--dock" style={{ maxHeight: `${EXECUTION_RESULTS_PANEL_HEIGHT}px` }}>
+              <div
+                className="te__results-panel te__results-panel--dock"
+                style={resultsPanelMaximized ? { maxHeight: "none" } : { maxHeight: `${EXECUTION_RESULTS_PANEL_HEIGHT}px` }}
+              >
                 <DataTable
                   key={resultsRefreshToken}
                   columns={[
