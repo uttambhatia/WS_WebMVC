@@ -709,6 +709,8 @@ function TestExecutionPanel({
   const [scheduleMessage, setScheduleMessage] = useState("");
   const [scheduleSaving, setScheduleSaving] = useState(false);
   const resultsDockRef = useRef(null);
+  const timezoneSearchSeqRef = useRef(0);
+  const frequencySearchSeqRef = useRef(0);
 
   useEffect(() => {
     setSelectedSet(new Set(selectedScripts || []));
@@ -886,10 +888,17 @@ function TestExecutionPanel({
     }
 
     const timer = window.setTimeout(async () => {
+      const requestId = ++timezoneSearchSeqRef.current;
       try {
         const items = await searchTimezones(scheduleTimezoneQuery.trim());
+        if (requestId !== timezoneSearchSeqRef.current || !isTimezoneDropdownOpen) {
+          return;
+        }
         setScheduleTimezoneOptions(Array.isArray(items) ? items : []);
       } catch {
+        if (requestId !== timezoneSearchSeqRef.current || !isTimezoneDropdownOpen) {
+          return;
+        }
         setScheduleTimezoneOptions([]);
       }
     }, 250);
@@ -904,16 +913,39 @@ function TestExecutionPanel({
     }
 
     const timer = window.setTimeout(async () => {
+      const requestId = ++frequencySearchSeqRef.current;
       try {
         const items = await searchFrequencies(scheduleFrequencyQuery.trim());
+        if (requestId !== frequencySearchSeqRef.current || !isFrequencyDropdownOpen) {
+          return;
+        }
         setScheduleFrequencyOptions(Array.isArray(items) ? items : []);
       } catch {
+        if (requestId !== frequencySearchSeqRef.current || !isFrequencyDropdownOpen) {
+          return;
+        }
         setScheduleFrequencyOptions([]);
       }
     }, 250);
 
     return () => window.clearTimeout(timer);
   }, [executionMode, scheduleRecurring, scheduleFrequencyQuery, isFrequencyDropdownOpen]);
+
+  const commitTimezoneSelection = useCallback((timezone) => {
+    setSelectedTimezone(timezone);
+    setScheduleTimezoneQuery(timezone?.timezoneName || timezone?.timezoneCode || "");
+    setScheduleTimezoneOptions([]);
+    setIsTimezoneDropdownOpen(false);
+    timezoneSearchSeqRef.current += 1;
+  }, []);
+
+  const commitFrequencySelection = useCallback((frequency) => {
+    setSelectedFrequency(frequency);
+    setScheduleFrequencyQuery(frequency?.frequencyName || frequency?.frequencyCode || "");
+    setScheduleFrequencyOptions([]);
+    setIsFrequencyDropdownOpen(false);
+    frequencySearchSeqRef.current += 1;
+  }, []);
 
   const normalizedSearch = treeSearchText.trim().toLowerCase();
 
@@ -1473,7 +1505,7 @@ function TestExecutionPanel({
                     setScheduleMessage("");
                   }}
                   onFocus={() => setIsTimezoneDropdownOpen(true)}
-                  onBlur={() => window.setTimeout(() => setIsTimezoneDropdownOpen(false), 120)}
+                  onBlur={() => setIsTimezoneDropdownOpen(false)}
                   disabled={mode === "view"}
                   className="te__schedule-input"
                   placeholder="Search timezone"
@@ -1481,16 +1513,15 @@ function TestExecutionPanel({
                 {isTimezoneDropdownOpen && scheduleTimezoneOptions.length > 0 && (
                   <ul className="te__autocomplete-list">
                     {scheduleTimezoneOptions.map((timezone) => (
-                      <li key={timezone.timezoneId}>
+                      <li key={timezone.timezoneId || timezone.timezoneCode || timezone.timezoneName}>
                         <button
                           type="button"
                           className="te__autocomplete-item"
-                          onClick={() => {
-                            setSelectedTimezone(timezone);
-                            setScheduleTimezoneQuery(timezone.timezoneName || timezone.timezoneCode || "");
-                            setScheduleTimezoneOptions([]);
-                            setIsTimezoneDropdownOpen(false);
+                          onMouseDown={(event) => {
+                            event.preventDefault();
+                            commitTimezoneSelection(timezone);
                           }}
+                          onClick={() => commitTimezoneSelection(timezone)}
                         >
                           {timezone.timezoneName || timezone.timezoneCode}
                         </button>
@@ -1534,7 +1565,7 @@ function TestExecutionPanel({
                       setScheduleMessage("");
                     }}
                     onFocus={() => setIsFrequencyDropdownOpen(true)}
-                    onBlur={() => window.setTimeout(() => setIsFrequencyDropdownOpen(false), 120)}
+                    onBlur={() => setIsFrequencyDropdownOpen(false)}
                     disabled={mode === "view"}
                     className="te__schedule-input"
                     placeholder="Search frequency"
@@ -1542,16 +1573,15 @@ function TestExecutionPanel({
                   {isFrequencyDropdownOpen && scheduleFrequencyOptions.length > 0 && (
                     <ul className="te__autocomplete-list">
                       {scheduleFrequencyOptions.map((frequency) => (
-                        <li key={frequency.frequencyId}>
+                        <li key={frequency.frequencyId || frequency.frequencyCode || frequency.frequencyName}>
                           <button
                             type="button"
                             className="te__autocomplete-item"
-                            onClick={() => {
-                              setSelectedFrequency(frequency);
-                              setScheduleFrequencyQuery(frequency.frequencyName || frequency.frequencyCode || "");
-                              setScheduleFrequencyOptions([]);
-                              setIsFrequencyDropdownOpen(false);
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                              commitFrequencySelection(frequency);
                             }}
+                            onClick={() => commitFrequencySelection(frequency)}
                           >
                             {frequency.frequencyName || frequency.frequencyCode}
                           </button>
