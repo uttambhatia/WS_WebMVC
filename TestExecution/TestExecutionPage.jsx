@@ -698,10 +698,12 @@ function TestExecutionPanel({
   const [scheduleRunAt, setScheduleRunAt] = useState("");
   const [scheduleTimezoneQuery, setScheduleTimezoneQuery] = useState("");
   const [scheduleTimezoneOptions, setScheduleTimezoneOptions] = useState([]);
+  const [isTimezoneDropdownOpen, setIsTimezoneDropdownOpen] = useState(false);
   const [selectedTimezone, setSelectedTimezone] = useState(null);
   const [scheduleRecurring, setScheduleRecurring] = useState(false);
   const [scheduleFrequencyQuery, setScheduleFrequencyQuery] = useState("");
   const [scheduleFrequencyOptions, setScheduleFrequencyOptions] = useState([]);
+  const [isFrequencyDropdownOpen, setIsFrequencyDropdownOpen] = useState(false);
   const [selectedFrequency, setSelectedFrequency] = useState(null);
   const [scheduleError, setScheduleError] = useState("");
   const [scheduleMessage, setScheduleMessage] = useState("");
@@ -878,7 +880,8 @@ function TestExecutionPanel({
   }, [regionOptions]);
 
   useEffect(() => {
-    if (executionMode !== "schedule") {
+    if (executionMode !== "schedule" || !isTimezoneDropdownOpen) {
+      setScheduleTimezoneOptions([]);
       return undefined;
     }
 
@@ -892,10 +895,11 @@ function TestExecutionPanel({
     }, 250);
 
     return () => window.clearTimeout(timer);
-  }, [executionMode, scheduleTimezoneQuery]);
+  }, [executionMode, scheduleTimezoneQuery, isTimezoneDropdownOpen]);
 
   useEffect(() => {
-    if (executionMode !== "schedule" || !scheduleRecurring) {
+    if (executionMode !== "schedule" || !scheduleRecurring || !isFrequencyDropdownOpen) {
+      setScheduleFrequencyOptions([]);
       return undefined;
     }
 
@@ -909,7 +913,7 @@ function TestExecutionPanel({
     }, 250);
 
     return () => window.clearTimeout(timer);
-  }, [executionMode, scheduleRecurring, scheduleFrequencyQuery]);
+  }, [executionMode, scheduleRecurring, scheduleFrequencyQuery, isFrequencyDropdownOpen]);
 
   const normalizedSearch = treeSearchText.trim().toLowerCase();
 
@@ -1463,15 +1467,18 @@ function TestExecutionPanel({
                   value={scheduleTimezoneQuery}
                   onChange={(event) => {
                     setScheduleTimezoneQuery(event.target.value);
+                    setIsTimezoneDropdownOpen(true);
                     setSelectedTimezone(null);
                     setScheduleError("");
                     setScheduleMessage("");
                   }}
+                  onFocus={() => setIsTimezoneDropdownOpen(true)}
+                  onBlur={() => window.setTimeout(() => setIsTimezoneDropdownOpen(false), 120)}
                   disabled={mode === "view"}
                   className="te__schedule-input"
                   placeholder="Search timezone"
                 />
-                {scheduleTimezoneOptions.length > 0 && (
+                {isTimezoneDropdownOpen && scheduleTimezoneOptions.length > 0 && (
                   <ul className="te__autocomplete-list">
                     {scheduleTimezoneOptions.map((timezone) => (
                       <li key={timezone.timezoneId}>
@@ -1482,6 +1489,7 @@ function TestExecutionPanel({
                             setSelectedTimezone(timezone);
                             setScheduleTimezoneQuery(timezone.timezoneName || timezone.timezoneCode || "");
                             setScheduleTimezoneOptions([]);
+                            setIsTimezoneDropdownOpen(false);
                           }}
                         >
                           {timezone.timezoneName || timezone.timezoneCode}
@@ -1520,15 +1528,18 @@ function TestExecutionPanel({
                     value={scheduleFrequencyQuery}
                     onChange={(event) => {
                       setScheduleFrequencyQuery(event.target.value);
+                      setIsFrequencyDropdownOpen(true);
                       setSelectedFrequency(null);
                       setScheduleError("");
                       setScheduleMessage("");
                     }}
+                    onFocus={() => setIsFrequencyDropdownOpen(true)}
+                    onBlur={() => window.setTimeout(() => setIsFrequencyDropdownOpen(false), 120)}
                     disabled={mode === "view"}
                     className="te__schedule-input"
                     placeholder="Search frequency"
                   />
-                  {scheduleFrequencyOptions.length > 0 && (
+                  {isFrequencyDropdownOpen && scheduleFrequencyOptions.length > 0 && (
                     <ul className="te__autocomplete-list">
                       {scheduleFrequencyOptions.map((frequency) => (
                         <li key={frequency.frequencyId}>
@@ -1539,6 +1550,7 @@ function TestExecutionPanel({
                               setSelectedFrequency(frequency);
                               setScheduleFrequencyQuery(frequency.frequencyName || frequency.frequencyCode || "");
                               setScheduleFrequencyOptions([]);
+                              setIsFrequencyDropdownOpen(false);
                             }}
                           >
                             {frequency.frequencyName || frequency.frequencyCode}
