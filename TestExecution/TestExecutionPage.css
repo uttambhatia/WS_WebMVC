@@ -23,20 +23,19 @@
   overflow-x: auto;
 }
 
-.workflow-stepper-page .stepper {
+.workflow-stepper-page .workflow-stepper {
   display: grid;
   grid-template-columns: repeat(7, minmax(130px, 1fr));
   gap: 0;
   min-width: 980px;
 }
 
-.workflow-stepper-page .stepper-item {
-  display: grid;
-  grid-template-columns: 42px 1fr;
-  align-items: start;
+.workflow-stepper-page .workflow-stepper__item {
+  position: relative;
+  min-height: 72px;
 }
 
-.workflow-stepper-page .stepper-circle-label {
+.workflow-stepper-page .workflow-stepper__circle-label {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -45,7 +44,7 @@
   gap: 8px;
 }
 
-.workflow-stepper-page .stepper-circle {
+.workflow-stepper-page .workflow-stepper__circle {
   width: 42px;
   height: 42px;
   border-radius: 50%;
@@ -58,20 +57,20 @@
   justify-content: center;
 }
 
-.workflow-stepper-page .stepper-active {
+.workflow-stepper-page .workflow-stepper__circle--active {
   border-color: var(--app-brand);
   color: var(--app-brand);
   background: color-mix(in srgb, var(--app-brand) 10%, #ffffff 90%);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--app-brand) 18%, transparent 82%);
 }
 
-.workflow-stepper-page .stepper-done {
+.workflow-stepper-page .workflow-stepper__circle--done {
   border-color: var(--app-brand);
   color: #ffffff;
   background: var(--app-brand);
 }
 
-.workflow-stepper-page .stepper-done-badge {
+.workflow-stepper-page .workflow-stepper__done-badge {
   position: absolute;
   top: -4px;
   right: -4px;
@@ -87,42 +86,38 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
-.workflow-stepper-page .stepper-label,
-.workflow-stepper-page .stepper-label-active {
+.workflow-stepper-page .workflow-stepper__label {
   text-align: center;
   font-size: 0.76rem;
   line-height: 1.2;
   width: 115px;
-}
-
-.workflow-stepper-page .stepper-label {
   color: #6d7886;
 }
 
-.workflow-stepper-page .stepper-label-active {
+.workflow-stepper-page .workflow-stepper__label--active {
   color: var(--app-control-text);
   font-weight: 700;
 }
 
-.workflow-stepper-page .stepper-line-wrapper {
-  display: flex;
-  align-items: center;
-  height: 42px;
-  padding: 0;
+.workflow-stepper-page .workflow-stepper__line-wrapper {
+  position: absolute;
+  top: 21px;
+  left: 42px;
+  right: 0;
+  height: 2px;
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
-.workflow-stepper-page .stepper-line,
-.workflow-stepper-page .stepper-line-done {
+.workflow-stepper-page .workflow-stepper__line {
   width: 100%;
   height: 2px;
+  display: block;
   border-radius: 999px;
-}
-
-.workflow-stepper-page .stepper-line {
   background: #d6dfe9;
 }
 
-.workflow-stepper-page .stepper-line-done {
+.workflow-stepper-page .workflow-stepper__line--done {
   background: var(--app-brand);
 }
 
@@ -158,7 +153,7 @@
     padding: 14px;
   }
 
-  .workflow-stepper-page .stepper {
+  .workflow-stepper-page .workflow-stepper {
     min-width: 900px;
   }
 }
