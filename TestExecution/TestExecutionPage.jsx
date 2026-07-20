@@ -1,5 +1,5 @@
-import { useState } from "react";
-import "./workflow-stepper.css";
+import React from "react";
+import "./stepper.css";
 
 const IconUpload = (props) => (
   <svg
@@ -150,7 +150,7 @@ const IconDoneTick = (props) => (
   </svg>
 );
 
-const STEPS = [
+const DEFAULT_STEPS = [
   "Upload / Input",
   "Requirement Validation",
   "Requirement Approval",
@@ -170,10 +170,14 @@ const STEP_ICONS = {
   "Test Case Evaluation": IconListChecks,
 };
 
-function Stepper({ currentStep }) {
+export default function WorkflowStepper({
+  currentStep = 1,
+  steps = DEFAULT_STEPS,
+  className = "",
+}) {
   return (
-    <div className="workflow-stepper">
-      {STEPS.map((label, idx) => {
+    <div className={["workflow-stepper", className].filter(Boolean).join(" ")}>
+      {steps.map((label, idx) => {
         const stepNumber = idx + 1;
         const isDone = stepNumber < currentStep;
         const isActive = stepNumber === currentStep;
@@ -187,7 +191,9 @@ function Stepper({ currentStep }) {
                   "workflow-stepper__circle",
                   isDone ? "workflow-stepper__circle--done" : "",
                   isActive ? "workflow-stepper__circle--active" : "",
-                ].join(" ")}
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
               >
                 {Icon ? <Icon /> : stepNumber}
                 {isDone && (
@@ -198,24 +204,26 @@ function Stepper({ currentStep }) {
               </div>
 
               <div
-                className={
-                  isActive
-                    ? "workflow-stepper__label workflow-stepper__label--active"
-                    : "workflow-stepper__label"
-                }
+                className={[
+                  "workflow-stepper__label",
+                  isActive ? "workflow-stepper__label--active" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
               >
                 {label}
               </div>
             </div>
 
-            {idx < STEPS.length - 1 && (
+            {idx < steps.length - 1 && (
               <div className="workflow-stepper__line-wrapper">
                 <div
-                  className={
-                    isDone
-                      ? "workflow-stepper__line workflow-stepper__line--done"
-                      : "workflow-stepper__line"
-                  }
+                  className={[
+                    "workflow-stepper__line",
+                    isDone ? "workflow-stepper__line--done" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                 />
               </div>
             )}
@@ -223,42 +231,5 @@ function Stepper({ currentStep }) {
         );
       })}
     </div>
-  );
-}
-
-export default function WorkflowStepperPage() {
-  const [currentStep, setCurrentStep] = useState(3);
-
-  return (
-    <section className="workflow-stepper-page">
-      <header className="workflow-stepper-header">
-        <h1>Requirement Lifecycle Stepper</h1>
-        <p>Track the current lifecycle stage from input through evaluation.</p>
-      </header>
-
-      <div className="workflow-stepper-card">
-        <Stepper currentStep={currentStep} />
-      </div>
-
-      <div className="workflow-stepper-controls">
-        <button
-          type="button"
-          onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
-          disabled={currentStep <= 1}
-        >
-          Previous
-        </button>
-        <span>
-          Active Step: <strong>{currentStep}</strong> / {STEPS.length}
-        </span>
-        <button
-          type="button"
-          onClick={() => setCurrentStep((prev) => Math.min(STEPS.length, prev + 1))}
-          disabled={currentStep >= STEPS.length}
-        >
-          Next
-        </button>
-      </div>
-    </section>
   );
 }
