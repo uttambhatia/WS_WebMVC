@@ -172,7 +172,7 @@ const STEP_ICONS = {
 
 function Stepper({ currentStep }) {
   return (
-    <div className="stepper">
+    <div className="workflow-stepper">
       {STEPS.map((label, idx) => {
         const stepNumber = idx + 1;
         const isDone = stepNumber < currentStep;
@@ -180,29 +180,43 @@ function Stepper({ currentStep }) {
         const Icon = STEP_ICONS[label];
 
         return (
-          <div key={label} className="stepper-item">
-            <div className="stepper-circle-label">
+          <div key={label} className="workflow-stepper__item">
+            <div className="workflow-stepper__circle-label">
               <div
                 className={[
-                  "stepper-circle",
-                  isDone ? "stepper-done" : "",
-                  isActive ? "stepper-active" : "",
+                  "workflow-stepper__circle",
+                  isDone ? "workflow-stepper__circle--done" : "",
+                  isActive ? "workflow-stepper__circle--active" : "",
                 ].join(" ")}
               >
                 {Icon ? <Icon /> : stepNumber}
                 {isDone && (
-                  <span className="stepper-done-badge" aria-hidden="true">
+                  <span className="workflow-stepper__done-badge" aria-hidden="true">
                     <IconDoneTick />
                   </span>
                 )}
               </div>
 
-              <div className={isActive ? "stepper-label-active" : "stepper-label"}>{label}</div>
+              <div
+                className={
+                  isActive
+                    ? "workflow-stepper__label workflow-stepper__label--active"
+                    : "workflow-stepper__label"
+                }
+              >
+                {label}
+              </div>
             </div>
 
             {idx < STEPS.length - 1 && (
-              <div className="stepper-line-wrapper">
-                <div className={isDone ? "stepper-line-done" : "stepper-line"} />
+              <div className="workflow-stepper__line-wrapper">
+                <div
+                  className={
+                    isDone
+                      ? "workflow-stepper__line workflow-stepper__line--done"
+                      : "workflow-stepper__line"
+                  }
+                />
               </div>
             )}
           </div>
