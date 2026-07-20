@@ -3,19 +3,19 @@
   gap: 16px;
 }
 
-.workflow-stepper-header h1 {
+.workflow-stepper-page .workflow-stepper-header h1 {
   margin: 0;
   font-size: 1.3rem;
   color: var(--app-control-text);
 }
 
-.workflow-stepper-header p {
+.workflow-stepper-page .workflow-stepper-header p {
   margin: 6px 0 0;
   color: color-mix(in srgb, var(--app-control-text) 72%, #ffffff 28%);
   max-width: 800px;
 }
 
-.workflow-stepper-card {
+.workflow-stepper-page .workflow-stepper-card {
   border: 1px solid var(--app-surface-border);
   background: var(--app-surface-bg);
   border-radius: 14px;
@@ -23,20 +23,20 @@
   overflow-x: auto;
 }
 
-.stepper {
+.workflow-stepper-page .stepper {
   display: grid;
   grid-template-columns: repeat(7, minmax(130px, 1fr));
   gap: 0;
   min-width: 980px;
 }
 
-.stepper-item {
+.workflow-stepper-page .stepper-item {
   display: grid;
   grid-template-columns: 42px 1fr;
   align-items: start;
 }
 
-.stepper-circle-label {
+.workflow-stepper-page .stepper-circle-label {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -45,7 +45,7 @@
   gap: 8px;
 }
 
-.stepper-circle {
+.workflow-stepper-page .stepper-circle {
   width: 42px;
   height: 42px;
   border-radius: 50%;
@@ -58,20 +58,20 @@
   justify-content: center;
 }
 
-.stepper-active {
+.workflow-stepper-page .stepper-active {
   border-color: var(--app-brand);
   color: var(--app-brand);
   background: color-mix(in srgb, var(--app-brand) 10%, #ffffff 90%);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--app-brand) 18%, transparent 82%);
 }
 
-.stepper-done {
+.workflow-stepper-page .stepper-done {
   border-color: var(--app-brand);
   color: #ffffff;
   background: var(--app-brand);
 }
 
-.stepper-done-badge {
+.workflow-stepper-page .stepper-done-badge {
   position: absolute;
   top: -4px;
   right: -4px;
@@ -87,53 +87,53 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
-.stepper-label,
-.stepper-label-active {
+.workflow-stepper-page .stepper-label,
+.workflow-stepper-page .stepper-label-active {
   text-align: center;
   font-size: 0.76rem;
   line-height: 1.2;
   width: 115px;
 }
 
-.stepper-label {
+.workflow-stepper-page .stepper-label {
   color: #6d7886;
 }
 
-.stepper-label-active {
+.workflow-stepper-page .stepper-label-active {
   color: var(--app-control-text);
   font-weight: 700;
 }
 
-.stepper-line-wrapper {
+.workflow-stepper-page .stepper-line-wrapper {
   display: flex;
   align-items: center;
   height: 42px;
   padding: 0;
 }
 
-.stepper-line,
-.stepper-line-done {
+.workflow-stepper-page .stepper-line,
+.workflow-stepper-page .stepper-line-done {
   width: 100%;
   height: 2px;
   border-radius: 999px;
 }
 
-.stepper-line {
+.workflow-stepper-page .stepper-line {
   background: #d6dfe9;
 }
 
-.stepper-line-done {
+.workflow-stepper-page .stepper-line-done {
   background: var(--app-brand);
 }
 
-.workflow-stepper-controls {
+.workflow-stepper-page .workflow-stepper-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
 }
 
-.workflow-stepper-controls button {
+.workflow-stepper-page .workflow-stepper-controls button {
   min-height: 34px;
   border: 1px solid var(--app-surface-border);
   border-radius: 8px;
@@ -144,21 +144,21 @@
   cursor: pointer;
 }
 
-.workflow-stepper-controls button:disabled {
+.workflow-stepper-page .workflow-stepper-controls button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.workflow-stepper-controls button:not(:disabled):hover {
+.workflow-stepper-page .workflow-stepper-controls button:not(:disabled):hover {
   border-color: var(--app-brand);
 }
 
 @media (max-width: 980px) {
-  .workflow-stepper-card {
+  .workflow-stepper-page .workflow-stepper-card {
     padding: 14px;
   }
 
-  .stepper {
+  .workflow-stepper-page .stepper {
     min-width: 900px;
   }
 }
