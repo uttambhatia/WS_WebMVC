@@ -1,0 +1,47 @@
+.posc-demo {
+  display: grid;
+  gap: var(--ubs-sp-5);
+  width: min(1040px, 100%);
+  margin: 0 auto;
+  padding: var(--ubs-sp-4);
+}
+
+.posc-demo__header {
+  display: grid;
+  gap: var(--ubs-sp-1);
+}
+
+.posc-demo__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ubs-c-text);
+}
+
+.posc-demo__subtitle {
+  margin: 0;
+  color: var(--ubs-c-text-muted);
+  font-size: var(--ubs-font-sz-sm);
+}
+
+.posc-demo__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: var(--ubs-sp-4);
+}
+
+.posc-demo__card {
+  display: grid;
+  gap: var(--ubs-sp-3);
+  background: var(--ubs-c-bg);
+  border: 1px solid var(--ubs-c-border-light);
+  border-radius: var(--ubs-radius-md);
+  padding: var(--ubs-sp-4);
+  box-shadow: var(--ubs-shadow-sm);
+}
+
+.posc-demo__card-title {
+  margin: 0;
+  color: var(--ubs-c-text);
+  font-size: var(--ubs-font-sz-md);
+}
